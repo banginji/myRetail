@@ -2,6 +2,7 @@ package com.myretail.service.handler
 
 import com.myretail.service.domain.ErrorMsg
 import com.myretail.service.domain.RedSky
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
@@ -13,6 +14,7 @@ import org.springframework.web.reactive.function.server.body
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.Duration
+import java.util.function.IntPredicate
 
 @Service
 class ProductHandler {
@@ -25,7 +27,15 @@ class ProductHandler {
 
         return Flux
                 .interval(Duration.ofMillis(200))
-                .flatMap { webClient.get().uri(uri).retrieve().bodyToMono<RedSky>() }
+                .flatMap {
+                    webClient
+                            .get()
+                            .uri(uri)
+                            .retrieve()
+                            .onStatus(HttpStatus::is4xxClientError) { Mono.empty() }
+                            .onStatus(HttpStatus::is5xxServerError) { Mono.error<Throwable>(Throwable("redsky not available")) }
+                            .bodyToMono<RedSky>()
+                }
                 .retryBackoff(3, Duration.ofMillis(100))
                 .take(1)
                 .flatMap { ok().body<RedSky>(Mono.just(it)) }
