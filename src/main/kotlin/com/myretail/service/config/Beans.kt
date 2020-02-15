@@ -9,5 +9,5 @@ fun beans() = beans {
 }
 
 fun routes(productHandler: ProductHandler) = router {
-    GET("/product", productHandler::retrieveProductInfo)
+    GET("/product/{id}", productHandler::retrieveProductInfo)
 }
