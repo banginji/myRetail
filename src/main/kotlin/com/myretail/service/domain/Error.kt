@@ -1,3 +1,7 @@
 package com.myretail.service.domain
 
-data class ErrorMsg(val message: String?)
+sealed class Error()
+
+data class ProductError(val productError: String?): Error()
+
+data class RedSkyError(val redSkyError: String?): Error()
