@@ -9,4 +9,4 @@ data class ProductResponse(val id: Int?, val name: String?, val current_price: C
 data class CurrentPrice(val value: Double?, val currency_code: String?)
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class ProductPriceResponse(val productPrice: ProductPrice?, val productError: ProductError? = null)
+data class ProductPriceResponse(val productPrice: ProductPrice?, val productPriceError: ProductPriceError? = null)
