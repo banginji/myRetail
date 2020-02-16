@@ -1,18 +1,22 @@
 package com.myretail.service.handler
 
 import com.myretail.service.domain.*
+import com.myretail.service.persistence.ProductPrice
 import com.myretail.service.repository.ProductPriceRepository
+import org.bson.json.JsonParseException
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.reactive.function.server.ServerRequest
-import org.springframework.web.reactive.function.server.ServerResponse.ok
+import org.springframework.web.reactive.function.server.ServerResponse.*
 import org.springframework.web.reactive.function.server.body
+import org.springframework.web.reactive.function.server.bodyToMono
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.Duration
 import java.util.function.BiFunction
+import java.util.function.Function
 
 @Service
 class ProductHandler(val productPriceRepository: ProductPriceRepository) {
@@ -24,10 +28,29 @@ class ProductHandler(val productPriceRepository: ProductPriceRepository) {
             .combineLatest(
                     getPrice(request.pathVariable("id").toInt()),
                     getProductTitle(request.pathVariable("id").toInt()),
-                    mapper()
+                    retrieveDataMapper()
             ).flatMap { ok().body<ProductResponse>(Mono.just(it)) }
             .takeLast(1)
             .next()
+
+    fun updateProductPrice(request: ServerRequest) = request
+            .bodyToMono<ProductRequest>()
+            .map(updateDataMapper())
+            .flatMap { (current_price) ->
+                productPriceRepository.findById(request.pathVariable("id").toInt())
+                        .flatMap { productPrice ->
+                            productPriceRepository.save(
+                                    ProductPrice(
+                                            productPrice.id,
+                                            current_price.value?.let { it } ?: productPrice.value,
+                                            current_price.currency_code?.let { it } ?: productPrice.currency_code
+                                    )
+                            )
+                        }
+                        .then(ok().build())
+                        .switchIfEmpty(status(HttpStatus.NOT_FOUND).build())
+            }
+            .onErrorResume(::badRequestResponse)
 
     private fun getPrice(id: Int) =
             productPriceRepository.findById(id).flatMap { Mono.just(ProductPriceResponse(it)) }
@@ -48,7 +71,7 @@ class ProductHandler(val productPriceRepository: ProductPriceRepository) {
             .next()
             .onErrorResume(::redSkyError)
 
-    private fun mapper() = BiFunction<ProductPriceResponse, RedSkyResponse, ProductResponse> { productPriceResponse, redSkyResponse ->
+    internal fun retrieveDataMapper() = BiFunction<ProductPriceResponse, RedSkyResponse, ProductResponse> { productPriceResponse, redSkyResponse ->
         ProductResponse(
                 productPriceResponse.productPrice?.let { it.id } ?: redSkyResponse.product?.item?.tcin?.toInt(),
                 redSkyResponse.product?.item?.product_description?.title,
@@ -57,7 +80,12 @@ class ProductHandler(val productPriceRepository: ProductPriceRepository) {
         )
     }
 
+    internal fun updateDataMapper() = Function<ProductRequest, ProductPriceRequest> { (current_price) -> ProductPriceRequest(current_price) }
+
     internal fun redSkyError(throwable: Throwable) =
             Mono.just(RedSkyResponse(null, RedSkyError("could not retrieve title from redsky: (${throwable.message})")))
+
+    internal fun badRequestResponse(throwable: Throwable) =
+            badRequest().body<ProductError>(Mono.just(ProductError("bad request")))
 }
 

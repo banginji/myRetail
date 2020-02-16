@@ -30,5 +30,8 @@ fun beans() = beans {
 }
 
 fun routes(productHandler: ProductHandler) = router {
-    GET("/product/{id}", productHandler::getProductInfo)
+    "/product/{id}".nest {
+        GET("", productHandler::getProductInfo)
+        PUT("", productHandler::updateProductPrice)
+    }
 }
