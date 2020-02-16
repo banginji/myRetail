@@ -1,8 +1,7 @@
 package com.myretail.service.handler
 
 import com.myretail.service.domain.*
-import com.myretail.service.mapper.retrieveDataMapper
-import com.myretail.service.mapper.updateDataMapper
+import com.myretail.service.mapper.*
 import com.myretail.service.persistence.ProductPrice
 import com.myretail.service.repository.ProductPriceRepository
 import org.springframework.http.HttpStatus
@@ -30,7 +29,7 @@ class ProductHandler(val productPriceRepository: ProductPriceRepository) {
                     getProductPrice(request.pathVariable("id").toInt()),
                     getProductTitle(request.pathVariable("id").toInt()),
                     retrieveDataMapper()
-            ).flatMap { ok().body<ProductResponse>(Mono.just(it)) }
+            ).flatMap(getResponseMapper())
             .takeLast(1)
             .next()
 
@@ -41,8 +40,8 @@ class ProductHandler(val productPriceRepository: ProductPriceRepository) {
             .onErrorResume(::badRequestResponse)
 
     private fun getProductPrice(id: Int) =
-            findProductPriceById(id).flatMap { Mono.just(ProductPriceResponse(it)) }
-                    .switchIfEmpty(Mono.just(ProductPriceResponse(null, ProductPriceError("price not found in data store"))))
+            findProductPriceById(id).flatMap(productPriceResponseMapper())
+                    .switchIfEmpty(productPriceResponseMapper().apply(null))
 
     private fun getProductTitle(id: Int) = Flux
             .interval(Duration.ofMillis(200))
@@ -57,7 +56,6 @@ class ProductHandler(val productPriceRepository: ProductPriceRepository) {
                 .get()
                 .uri("/v2/pdp/tcin/$id?excludes=taxonomy,price,promotion,bulk_ship,rating_and_review_reviews,rating_and_review_statistics,question_answer_statistics")
                 .retrieve()
-                .onStatus(HttpStatus::is4xxClientError) { Mono.empty() }
                 .bodyToMono()
     }
 
