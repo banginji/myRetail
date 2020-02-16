@@ -1,21 +1,22 @@
 package com.myretail.service.handler
 
 import com.myretail.service.domain.*
+import com.myretail.service.mapper.retrieveDataMapper
+import com.myretail.service.mapper.updateDataMapper
 import com.myretail.service.persistence.ProductPrice
 import com.myretail.service.repository.ProductPriceRepository
-import org.bson.json.JsonParseException
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
 import org.springframework.web.reactive.function.server.ServerRequest
+import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.ServerResponse.*
 import org.springframework.web.reactive.function.server.body
 import org.springframework.web.reactive.function.server.bodyToMono
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.Duration
-import java.util.function.BiFunction
 import java.util.function.Function
 
 @Service
@@ -26,7 +27,7 @@ class ProductHandler(val productPriceRepository: ProductPriceRepository) {
 
     fun getProductInfo(request: ServerRequest) = Flux
             .combineLatest(
-                    getPrice(request.pathVariable("id").toInt()),
+                    getProductPrice(request.pathVariable("id").toInt()),
                     getProductTitle(request.pathVariable("id").toInt()),
                     retrieveDataMapper()
             ).flatMap { ok().body<ProductResponse>(Mono.just(it)) }
@@ -36,51 +37,48 @@ class ProductHandler(val productPriceRepository: ProductPriceRepository) {
     fun updateProductPrice(request: ServerRequest) = request
             .bodyToMono<ProductRequest>()
             .map(updateDataMapper())
-            .flatMap { (current_price) ->
-                productPriceRepository.findById(request.pathVariable("id").toInt())
-                        .flatMap { productPrice ->
-                            productPriceRepository.save(
-                                    ProductPrice(
-                                            productPrice.id,
-                                            current_price.value?.let { it } ?: productPrice.value,
-                                            current_price.currency_code?.let { it } ?: productPrice.currency_code
-                                    )
-                            )
-                        }
-                        .then(ok().build())
-                        .switchIfEmpty(status(HttpStatus.NOT_FOUND).build())
-            }
+            .flatMap(updateExistingProductPrice(request.pathVariable("id").toInt()))
             .onErrorResume(::badRequestResponse)
 
-    private fun getPrice(id: Int) =
-            productPriceRepository.findById(id).flatMap { Mono.just(ProductPriceResponse(it)) }
+    private fun getProductPrice(id: Int) =
+            findProductPriceById(id).flatMap { Mono.just(ProductPriceResponse(it)) }
                     .switchIfEmpty(Mono.just(ProductPriceResponse(null, ProductPriceError("price not found in data store"))))
 
     private fun getProductTitle(id: Int) = Flux
             .interval(Duration.ofMillis(200))
-            .flatMap {
-                webClient
-                        .get()
-                        .uri("/v2/pdp/tcin/$id?excludes=taxonomy,price,promotion,bulk_ship,rating_and_review_reviews,rating_and_review_statistics,question_answer_statistics")
-                        .retrieve()
-                        .onStatus(HttpStatus::is4xxClientError) { Mono.empty() }
-                        .bodyToMono<RedSkyResponse>()
-            }
+            .flatMap(invokeRedSkyCall(id))
             .retryBackoff(3, Duration.ofMillis(100))
             .take(1)
             .next()
             .onErrorResume(::redSkyError)
 
-    internal fun retrieveDataMapper() = BiFunction<ProductPriceResponse, RedSkyResponse, ProductResponse> { productPriceResponse, redSkyResponse ->
-        ProductResponse(
-                productPriceResponse.productPrice?.let { it.id } ?: redSkyResponse.product?.item?.tcin?.toInt(),
-                redSkyResponse.product?.item?.product_description?.title,
-                productPriceResponse.productPrice?.let { CurrentPrice(productPriceResponse.productPrice.value, productPriceResponse.productPrice.currency_code) },
-                listOfNotNull(productPriceResponse.productPriceError, redSkyResponse.redSkyError)
+    private fun invokeRedSkyCall(id: Int) = Function<Long, Mono<RedSkyResponse>> {
+        webClient
+                .get()
+                .uri("/v2/pdp/tcin/$id?excludes=taxonomy,price,promotion,bulk_ship,rating_and_review_reviews,rating_and_review_statistics,question_answer_statistics")
+                .retrieve()
+                .onStatus(HttpStatus::is4xxClientError) { Mono.empty() }
+                .bodyToMono()
+    }
+
+    private fun findProductPriceById(id: Int) = productPriceRepository.findById(id)
+
+    private fun updateProductPrice(current_price: CurrentPrice) = Function<ProductPrice, Mono<ProductPrice>> { productPrice ->
+        productPriceRepository.save(
+                ProductPrice(
+                        productPrice.id,
+                        current_price.value ?: productPrice.value,
+                        current_price.currency_code ?: productPrice.currency_code
+                )
         )
     }
 
-    internal fun updateDataMapper() = Function<ProductRequest, ProductPriceRequest> { (current_price) -> ProductPriceRequest(current_price) }
+    private fun updateExistingProductPrice(id: Int) = Function<ProductPriceRequest, Mono<ServerResponse>> { (current_price) ->
+        findProductPriceById(id)
+                .flatMap(updateProductPrice(current_price))
+                .then(ok().build())
+                .switchIfEmpty(status(HttpStatus.NOT_FOUND).build())
+    }
 
     internal fun redSkyError(throwable: Throwable) =
             Mono.just(RedSkyResponse(null, RedSkyError("could not retrieve title from redsky: (${throwable.message})")))
