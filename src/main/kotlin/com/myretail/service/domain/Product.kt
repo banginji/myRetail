@@ -3,7 +3,6 @@ package com.myretail.service.domain
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.myretail.service.persistence.ProductPrice
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
 data class ProductRequest(val current_price: CurrentPrice)
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -11,7 +10,6 @@ data class ProductResponse(val id: Int?, val name: String?, val current_price: C
 
 data class CurrentPrice(val value: Double?, val currency_code: String?)
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
 data class ProductPriceRequest(val current_price: CurrentPrice)
 
 @JsonInclude(JsonInclude.Include.NON_NULL)

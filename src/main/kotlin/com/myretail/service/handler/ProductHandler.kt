@@ -51,7 +51,7 @@ class ProductHandler(val productPriceRepository: ProductPriceRepository) {
             .next()
             .onErrorResume(::redSkyError)
 
-    private fun invokeRedSkyCall(id: Int) = Function<Long, Mono<RedSkyResponse>> {
+    fun invokeRedSkyCall(id: Int) = Function<Long, Mono<RedSkyResponse>> {
         webClient
                 .get()
                 .uri("/v2/pdp/tcin/$id?excludes=taxonomy,price,promotion,bulk_ship,rating_and_review_reviews,rating_and_review_statistics,question_answer_statistics")
