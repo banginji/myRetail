@@ -1,0 +1,14 @@
+version: "3"
+services:
+  ms:
+    build: .
+    ports:
+      - 8080:8080
+    links:
+      - mongodb
+    environment:
+      SPRING_DATA_MONGODB_HOST: mongodb
+  mongodb:
+    image: mongo
+    ports:
+      - 27017:27017
