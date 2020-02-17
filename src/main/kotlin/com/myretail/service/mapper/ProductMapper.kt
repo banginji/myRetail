@@ -4,7 +4,8 @@ import com.myretail.service.domain.*
 import com.myretail.service.persistence.ProductPrice
 import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.function.server.ServerResponse
-import org.springframework.web.reactive.function.server.ServerResponse.*
+import org.springframework.web.reactive.function.server.ServerResponse.ok
+import org.springframework.web.reactive.function.server.ServerResponse.status
 import org.springframework.web.reactive.function.server.body
 import reactor.core.publisher.Mono
 import java.util.function.BiFunction
