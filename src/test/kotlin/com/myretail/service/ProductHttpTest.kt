@@ -1,7 +1,10 @@
 package com.myretail.service
 
 import com.myretail.service.config.routes
-import com.myretail.service.domain.*
+import com.myretail.service.domain.RedSkyProduct
+import com.myretail.service.domain.RedSkyProductItem
+import com.myretail.service.domain.RedSkyProductItemDesc
+import com.myretail.service.domain.RedSkyResponse
 import com.myretail.service.handler.ProductHandler
 import com.myretail.service.persistence.ProductPrice
 import com.myretail.service.repository.ProductPriceRepository
@@ -11,8 +14,9 @@ import org.mockito.Mockito
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.web.reactive.server.WebTestClient
-import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
+import reactor.test.StepVerifier
+import java.time.Duration
 import java.util.function.Function
 
 @WebFluxTest
@@ -89,20 +93,15 @@ class ProductHttpTest {
         val value = 15.3
         val currencyCode = "USD"
 
-        val redSkyErrorMessage = "could not retrieve title from redsky"
+        val redSkyErrorMessage = "could not retrieve title from redsky: (Retries exhausted: 3/3)"
 
         Mockito
                 .`when`(productPriceRepository.findById(id))
                 .thenReturn(Mono.just(ProductPrice(id, value, currencyCode)))
 
-        Mockito.doReturn(Function<Long, Mono<RedSkyResponse>> {
-            Mono.just(
-                    RedSkyResponse(
-                            null,
-                            RedSkyError(redSkyErrorMessage)
-                    )
-            )
-        }).`when`(productHandler).invokeRedSkyCall(id)
+        Mockito
+                .doReturn(Function<Long, Mono<RedSkyResponse>> { Mono.error(Throwable()) })
+                .`when`(productHandler).invokeRedSkyCall(id)
 
         /**
          * {
@@ -195,21 +194,18 @@ class ProductHttpTest {
     fun `get product response when data not exist in both data store and redsky`() {
         val id = 8
 
-        val redSkyErrorMessage = "could not retrieve title from redsky"
+        val redSkyErrorMessage = "could not retrieve title from redsky: (Retries exhausted: 3/3)"
         val productPriceError = "price not found in data store"
 
         Mockito
                 .`when`(productPriceRepository.findById(id))
                 .thenReturn(Mono.empty())
 
-        Mockito.doReturn(Function<Long, Mono<RedSkyResponse>> {
-            Mono.just(
-                    RedSkyResponse(
-                            null,
-                            RedSkyError(redSkyErrorMessage)
-                    )
-            )
-        }).`when`(productHandler).invokeRedSkyCall(id)
+        Mockito
+                .doReturn(Function<Long, Mono<RedSkyResponse>> { Mono.error(Throwable()) })
+                .`when`(productHandler).invokeRedSkyCall(id)
+
+        StepVerifier.withVirtualTime { productHandler.getProductTitle(id) }.thenAwait(Duration.ofSeconds(10))
 
         /**
          * {

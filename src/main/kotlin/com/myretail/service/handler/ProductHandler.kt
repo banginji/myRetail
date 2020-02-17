@@ -39,14 +39,14 @@ class ProductHandler(val productPriceRepository: ProductPriceRepository) {
             .flatMap(updateExistingProductPrice(request.pathVariable("id").toInt()))
             .onErrorResume(::badRequestResponse)
 
-    private fun getProductPrice(id: Int) =
+    fun getProductPrice(id: Int) =
             findProductPriceById(id).flatMap(productPriceResponseMapper())
                     .switchIfEmpty(productPriceResponseMapper().apply(null))
 
-    private fun getProductTitle(id: Int) = Flux
+    fun getProductTitle(id: Int) = Flux
             .interval(Duration.ofMillis(200))
             .flatMap(invokeRedSkyCall(id))
-            .retryBackoff(3, Duration.ofMillis(100))
+            .retryBackoff(3, Duration.ofMillis(100), Duration.ofSeconds(1), 0.1)
             .take(1)
             .next()
             .onErrorResume(::redSkyError)
@@ -59,22 +59,21 @@ class ProductHandler(val productPriceRepository: ProductPriceRepository) {
                 .bodyToMono()
     }
 
-    private fun findProductPriceById(id: Int) = productPriceRepository.findById(id)
+    fun findProductPriceById(id: Int) = productPriceRepository.findById(id)
 
-    private fun updateProductPrice(current_price: CurrentPrice) = Function<ProductPrice, Mono<ProductPrice>> { productPrice ->
+    private fun updateProductPrice(current_price: CurrentPrice) = Function<ProductPrice, Mono<ServerResponse>> { productPrice ->
         productPriceRepository.save(
                 ProductPrice(
                         productPrice.id,
                         current_price.value ?: productPrice.value,
                         current_price.currency_code ?: productPrice.currency_code
                 )
-        )
+        ).then(ok().build())
     }
 
     private fun updateExistingProductPrice(id: Int) = Function<ProductPriceRequest, Mono<ServerResponse>> { (current_price) ->
         findProductPriceById(id)
                 .flatMap(updateProductPrice(current_price))
-                .then(ok().build())
                 .switchIfEmpty(status(HttpStatus.NOT_FOUND).build())
     }
 

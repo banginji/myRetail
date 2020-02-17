@@ -6,7 +6,7 @@ import com.myretail.service.persistence.ProductPrice
 data class ProductRequest(val current_price: CurrentPrice)
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class ProductResponse(val id: Int?, val name: String?, val current_price: CurrentPrice?, val productErrors: List<WrapperError?> = emptyList())
+data class ProductResponse(val id: Int?, val name: String?, val current_price: CurrentPrice?, val productErrors: List<Any> = emptyList())
 
 data class CurrentPrice(val value: Double?, val currency_code: String?)
 
