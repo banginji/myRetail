@@ -4,7 +4,8 @@ import com.myretail.service.config.routes
 import com.myretail.service.domain.*
 import com.myretail.service.handler.ProductHandler
 import com.myretail.service.persistence.ProductPrice
-import com.myretail.service.service.ProductService
+import com.myretail.service.service.PriceService
+import com.myretail.service.service.RedSkyService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -16,14 +17,17 @@ import reactor.core.publisher.Mono
 @WebFluxTest
 class ProductHttpTest {
     @MockBean
-    private lateinit var productService: ProductService
+    private lateinit var priceService: PriceService
+
+    @MockBean
+    private lateinit var redSkyService: RedSkyService
 
     private lateinit var client: WebTestClient
     private lateinit var productHandler: ProductHandler
 
     @BeforeEach
     fun beforeEach() {
-        productHandler = Mockito.spy(ProductHandler(productService))
+        productHandler = Mockito.spy(ProductHandler(priceService, redSkyService))
         client = WebTestClient.bindToRouterFunction(routes(productHandler)).build()
     }
 
@@ -34,10 +38,12 @@ class ProductHttpTest {
         val currencyCode = "USD"
         val productPriceResponse = ProductPriceResponse(ProductPrice(id, value, currencyCode))
 
+        Mockito.doReturn(Mono.just(productPriceResponse)).`when`(priceService).getProductPrice(id)
+
         val title = "item1"
         val redSkyResponse = RedSkyResponse(RedSkyProduct(RedSkyProductItem(id.toString(), RedSkyProductItemDesc(title))), null)
 
-        Mockito.doReturn(Pair(Mono.just(productPriceResponse), Mono.just(redSkyResponse))).`when`(productService).getProductInfo(id)
+        Mockito.doReturn(Mono.just(redSkyResponse)).`when`(redSkyService).getProductTitle(id)
 
         /**
          * {
@@ -75,10 +81,12 @@ class ProductHttpTest {
 
         val productPriceResponse = ProductPriceResponse(ProductPrice(id, value, currencyCode))
 
+        Mockito.doReturn(Mono.just(productPriceResponse)).`when`(priceService).getProductPrice(id)
+
         val redSkyErrorMessage = "could not retrieve title from redsky: (Retries exhausted: 3/3)"
         val redSkyResponse = RedSkyResponse(null, RedSkyError(redSkyErrorMessage))
 
-        Mockito.doReturn(Pair(Mono.just(productPriceResponse), Mono.just(redSkyResponse))).`when`(productService).getProductInfo(id)
+        Mockito.doReturn(Mono.just(redSkyResponse)).`when`(redSkyService).getProductTitle(id)
 
         /**
          * {
@@ -120,10 +128,12 @@ class ProductHttpTest {
 
         val productPriceResponse = ProductPriceResponse(null, ProductPriceError(productPriceError))
 
+        Mockito.doReturn(Mono.just(productPriceResponse)).`when`(priceService).getProductPrice(id)
+
         val title = "item1"
         val redSkyResponse = RedSkyResponse(RedSkyProduct(RedSkyProductItem(id.toString(), RedSkyProductItemDesc(title))), null)
 
-        Mockito.doReturn(Pair(Mono.just(productPriceResponse), Mono.just(redSkyResponse))).`when`(productService).getProductInfo(id)
+        Mockito.doReturn(Mono.just(redSkyResponse)).`when`(redSkyService).getProductTitle(id)
 
         /**
          * {
@@ -162,9 +172,11 @@ class ProductHttpTest {
 
         val productPriceResponse = ProductPriceResponse(null, ProductPriceError(productPriceError))
 
+        Mockito.doReturn(Mono.just(productPriceResponse)).`when`(priceService).getProductPrice(id)
+
         val redSkyResponse = RedSkyResponse(null, RedSkyError(redSkyErrorMessage))
 
-        Mockito.doReturn(Pair(Mono.just(productPriceResponse), Mono.just(redSkyResponse))).`when`(productService).getProductInfo(id)
+        Mockito.doReturn(Mono.just(redSkyResponse)).`when`(redSkyService).getProductTitle(id)
 
         /**
          * {

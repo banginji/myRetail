@@ -5,7 +5,8 @@ import com.myretail.service.domain.ProductRequest
 import com.myretail.service.mapper.getResponseMapper
 import com.myretail.service.mapper.retrieveDataMapper
 import com.myretail.service.mapper.updateDataMapper
-import com.myretail.service.service.ProductService
+import com.myretail.service.service.PriceService
+import com.myretail.service.service.RedSkyService
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
@@ -16,27 +17,34 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Service
-class ProductHandler(val productService: ProductService) {
+class ProductHandler(val priceService: PriceService, val redSkyService: RedSkyService) {
 
     fun getProductInfo(request: ServerRequest): Mono<ServerResponse> {
-        val (productPriceResponse, redSkyResponse) =
-                productService.getProductInfo(request.pathVariable("id").toInt())
+        val id = request.pathVariable("id").toIntOrNull() ?: 0
 
         return Flux
-                .combineLatest(productPriceResponse, redSkyResponse, retrieveDataMapper())
+                .combineLatest(
+                        priceService.getProductPrice(id),
+                        redSkyService.getProductTitle(id),
+                        retrieveDataMapper()
+                )
                 .flatMap(getResponseMapper())
                 .takeLast(1)
                 .next()
                 .onErrorResume(::badRequestResponse)
     }
 
-    fun updateProductPrice(request: ServerRequest) = request
-            .bodyToMono<ProductRequest>()
-            .map(updateDataMapper())
-            .flatMap(productService.updateProductPrice(request.pathVariable("id").toInt()))
-            .onErrorResume(::badRequestResponse)
+    fun updateProductPrice(request: ServerRequest): Mono<ServerResponse> {
+        val id = request.pathVariable("id").toIntOrNull() ?: 0
 
-    fun badRequestResponse(throwable: Throwable) =
-            badRequest().body<ProductError>(Mono.just(ProductError("bad request")))
+        return request
+                .bodyToMono<ProductRequest>()
+                .map(updateDataMapper())
+                .flatMap(priceService.updateProductPrice(id))
+                .onErrorResume(::badRequestResponse)
+    }
+
+        fun badRequestResponse(throwable: Throwable?) =
+                badRequest().body<ProductError>(Mono.just(ProductError("bad request")))
 }
 
