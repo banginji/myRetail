@@ -49,7 +49,12 @@ class ProductService(val productPriceRepository: ProductPriceRepository) {
                 .bodyToMono()
     }
 
-    fun findProductPriceById(id: Int) = productPriceRepository.findById(id)
+    fun updateExistingProductPrice(id: Int, productPriceRequest: ProductPriceRequest): Mono<ServerResponse> =
+            findProductPriceById(id)
+                    .flatMap(updateProductPrice(productPriceRequest.current_price))
+                    .switchIfEmpty(status(HttpStatus.NOT_FOUND).build())
+
+    private fun findProductPriceById(id: Int) = productPriceRepository.findById(id)
 
     private fun updateProductPrice(current_price: CurrentPrice) = Function<ProductPrice, Mono<ServerResponse>> { productPrice ->
         productPriceRepository.save(
@@ -60,11 +65,6 @@ class ProductService(val productPriceRepository: ProductPriceRepository) {
                 )
         ).then(ok().build())
     }
-
-    private fun updateExistingProductPrice(id: Int, productPriceRequest: ProductPriceRequest): Mono<ServerResponse> =
-        findProductPriceById(id)
-                .flatMap(updateProductPrice(productPriceRequest.current_price))
-                .switchIfEmpty(status(HttpStatus.NOT_FOUND).build())
 
     private fun redSkyError(throwable: Throwable) =
             Mono.just(RedSkyResponse(null, RedSkyError("could not retrieve title from redsky: (${throwable.message})")))

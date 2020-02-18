@@ -27,6 +27,7 @@ class ProductHandler(val productService: ProductService) {
                 .flatMap(getResponseMapper())
                 .takeLast(1)
                 .next()
+                .onErrorResume(::badRequestResponse)
     }
 
     fun updateProductPrice(request: ServerRequest) = request
@@ -35,7 +36,7 @@ class ProductHandler(val productService: ProductService) {
             .flatMap(productService.updateProductPrice(request.pathVariable("id").toInt()))
             .onErrorResume(::badRequestResponse)
 
-    internal fun badRequestResponse(throwable: Throwable) =
+    fun badRequestResponse(throwable: Throwable) =
             badRequest().body<ProductError>(Mono.just(ProductError("bad request")))
 }
 
