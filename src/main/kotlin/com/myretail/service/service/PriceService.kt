@@ -16,12 +16,13 @@ import java.util.function.Function
 @Service
 class PriceService(val productPriceRepository: ProductPriceRepository) {
     fun getProductPrice(id: Int) =
-            findProductPriceById(id).flatMap(productPriceResponseMapper())
+            findProductPriceById(id)
+                    .flatMap(productPriceResponseMapper())
                     .switchIfEmpty(productPriceResponseMapper().apply(null))
 
     fun updateProductPrice(id: Int) = Function<UpdateProductPriceRequest, Mono<ServerResponse>>{ updateExistingProductPrice(id, it) }
 
-    fun updateExistingProductPrice(id: Int, updateProductPriceRequest: UpdateProductPriceRequest): Mono<ServerResponse> =
+    fun updateExistingProductPrice(id: Int, updateProductPriceRequest: UpdateProductPriceRequest) =
             findProductPriceById(id)
                     .flatMap(updateProductPrice(updateProductPriceRequest.current_price))
                     .switchIfEmpty(status(HttpStatus.NOT_FOUND).build())
