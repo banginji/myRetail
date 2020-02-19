@@ -26,13 +26,7 @@ fun updateDataMapper() = Function<UpdateProductRequest, UpdateProductPriceReques
 
 fun productPriceResponseMapper() = Function<ProductPriceDocument?, Mono<ProductPriceResponse>> {
     it
-            ?.let {
-                Mono.just(
-                        ProductPriceResponse(
-                                ProductPrice(it.id, it.value, it.currency_code)
-                        )
-                )
-            }
+            ?.let { Mono.just(ProductPriceResponse(ProductPrice(it.id, it.value, it.currency_code))) }
             ?: Mono.just(ProductPriceResponse(null, ProductPriceError("price not found in data store")))
 }
 
