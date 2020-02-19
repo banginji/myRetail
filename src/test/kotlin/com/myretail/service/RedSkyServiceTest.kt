@@ -1,6 +1,6 @@
 package com.myretail.service
 
-import com.myretail.service.domain.*
+import com.myretail.service.domain.redsky.*
 import com.myretail.service.service.RedSkyService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach

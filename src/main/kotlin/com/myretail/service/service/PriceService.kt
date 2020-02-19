@@ -1,7 +1,7 @@
 package com.myretail.service.service
 
-import com.myretail.service.domain.CurrentPrice
-import com.myretail.service.domain.ProductPriceRequest
+import com.myretail.service.domain.price.CurrentPrice
+import com.myretail.service.domain.price.UpdateProductPriceRequest
 import com.myretail.service.mapper.productPriceResponseMapper
 import com.myretail.service.persistence.ProductPrice
 import com.myretail.service.repository.ProductPriceRepository
@@ -19,11 +19,11 @@ class PriceService(val productPriceRepository: ProductPriceRepository) {
             findProductPriceById(id).flatMap(productPriceResponseMapper())
                     .switchIfEmpty(productPriceResponseMapper().apply(null))
 
-    fun updateProductPrice(id: Int) = Function<ProductPriceRequest, Mono<ServerResponse>>{ updateExistingProductPrice(id, it) }
+    fun updateProductPrice(id: Int) = Function<UpdateProductPriceRequest, Mono<ServerResponse>>{ updateExistingProductPrice(id, it) }
 
-    fun updateExistingProductPrice(id: Int, productPriceRequest: ProductPriceRequest): Mono<ServerResponse> =
+    fun updateExistingProductPrice(id: Int, updateProductPriceRequest: UpdateProductPriceRequest): Mono<ServerResponse> =
             findProductPriceById(id)
-                    .flatMap(updateProductPrice(productPriceRequest.current_price))
+                    .flatMap(updateProductPrice(updateProductPriceRequest.current_price))
                     .switchIfEmpty(status(HttpStatus.NOT_FOUND).build())
 
     private fun findProductPriceById(id: Int) = productPriceRepository.findById(id)

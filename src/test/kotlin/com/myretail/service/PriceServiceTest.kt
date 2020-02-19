@@ -1,9 +1,9 @@
 package com.myretail.service
 
-import com.myretail.service.domain.CurrentPrice
-import com.myretail.service.domain.ProductPriceError
-import com.myretail.service.domain.ProductPriceRequest
-import com.myretail.service.domain.ProductPriceResponse
+import com.myretail.service.domain.price.CurrentPrice
+import com.myretail.service.domain.price.ProductPriceError
+import com.myretail.service.domain.price.UpdateProductPriceRequest
+import com.myretail.service.domain.price.ProductPriceResponse
 import com.myretail.service.persistence.ProductPrice
 import com.myretail.service.repository.ProductPriceRepository
 import com.myretail.service.service.PriceService
@@ -50,7 +50,7 @@ class PriceServiceTest {
         val value = 1.1
         val currencyCode = "USD"
 
-        val productPriceRequest = ProductPriceRequest(CurrentPrice(value, currencyCode))
+        val productPriceRequest = UpdateProductPriceRequest(CurrentPrice(value, currencyCode))
 
         Mockito.doReturn(ok().build()).`when`(priceService).updateExistingProductPrice(id, productPriceRequest)
 
@@ -106,7 +106,7 @@ class PriceServiceTest {
 
         val newValue = 2.2
         val newCurrencyCode = "EUR"
-        val updateProductPriceRequest = ProductPriceRequest(CurrentPrice(newValue, newCurrencyCode))
+        val updateProductPriceRequest = UpdateProductPriceRequest(CurrentPrice(newValue, newCurrencyCode))
 
         val updatedProductPrice = ProductPrice(id, newValue, newCurrencyCode)
         Mockito
@@ -129,7 +129,7 @@ class PriceServiceTest {
 
         val newValue = 2.2
         val newCurrencyCode = "EUR"
-        val updateProductPriceRequest = ProductPriceRequest(CurrentPrice(newValue, newCurrencyCode))
+        val updateProductPriceRequest = UpdateProductPriceRequest(CurrentPrice(newValue, newCurrencyCode))
 
         StepVerifier
                 .create(priceService.updateExistingProductPrice(id, updateProductPriceRequest))

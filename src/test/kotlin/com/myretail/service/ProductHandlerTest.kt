@@ -1,6 +1,10 @@
 package com.myretail.service
 
 import com.myretail.service.domain.*
+import com.myretail.service.domain.price.CurrentPrice
+import com.myretail.service.domain.price.ProductPriceError
+import com.myretail.service.domain.price.ProductPriceResponse
+import com.myretail.service.domain.redsky.*
 import com.myretail.service.handler.ProductHandler
 import com.myretail.service.persistence.ProductPrice
 import com.myretail.service.service.PriceService
@@ -101,7 +105,7 @@ class ProductHandlerTest {
 
         val newValue = 2.2
         val newCurrencyCode = "EUR"
-        val updateProductRequest = ProductRequest(CurrentPrice(newValue, newCurrencyCode))
+        val updateProductRequest = UpdateProductRequest(CurrentPrice(newValue, newCurrencyCode))
 
         val serverRequest = MockServerRequest.builder().pathVariable("id", id.toString()).body(Mono.just(updateProductRequest))
 

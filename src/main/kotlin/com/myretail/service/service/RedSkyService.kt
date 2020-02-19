@@ -1,7 +1,7 @@
 package com.myretail.service.service
 
-import com.myretail.service.domain.RedSkyError
-import com.myretail.service.domain.RedSkyResponse
+import com.myretail.service.domain.redsky.RedSkyError
+import com.myretail.service.domain.redsky.RedSkyResponse
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono

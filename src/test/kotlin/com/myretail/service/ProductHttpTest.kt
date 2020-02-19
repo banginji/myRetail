@@ -1,7 +1,9 @@
 package com.myretail.service
 
 import com.myretail.service.config.routes
-import com.myretail.service.domain.*
+import com.myretail.service.domain.price.ProductPriceError
+import com.myretail.service.domain.price.ProductPriceResponse
+import com.myretail.service.domain.redsky.*
 import com.myretail.service.handler.ProductHandler
 import com.myretail.service.persistence.ProductPrice
 import com.myretail.service.service.PriceService
