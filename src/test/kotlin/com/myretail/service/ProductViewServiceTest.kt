@@ -2,10 +2,10 @@ package com.myretail.service
 
 import com.myretail.service.domain.UpdateProductRequest
 import com.myretail.service.domain.price.CurrentPrice
+import com.myretail.service.domain.price.ProductPrice
 import com.myretail.service.domain.price.ProductPriceError
 import com.myretail.service.domain.price.ProductPriceResponse
 import com.myretail.service.domain.redsky.*
-import com.myretail.service.persistence.ProductPrice
 import com.myretail.service.service.PriceService
 import com.myretail.service.service.ProductViewService
 import com.myretail.service.service.RedSkyService

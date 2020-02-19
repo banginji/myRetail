@@ -3,7 +3,7 @@ package com.myretail.service.service
 import com.myretail.service.domain.price.CurrentPrice
 import com.myretail.service.domain.price.UpdateProductPriceRequest
 import com.myretail.service.mapper.productPriceResponseMapper
-import com.myretail.service.persistence.ProductPrice
+import com.myretail.service.persistence.ProductPriceDocument
 import com.myretail.service.repository.ProductPriceRepository
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -28,9 +28,9 @@ class PriceService(val productPriceRepository: ProductPriceRepository) {
 
     private fun findProductPriceById(id: Int) = productPriceRepository.findById(id)
 
-    private fun updateProductPrice(current_price: CurrentPrice) = Function<ProductPrice, Mono<ServerResponse>> { productPrice ->
+    private fun updateProductPrice(current_price: CurrentPrice) = Function<ProductPriceDocument, Mono<ServerResponse>> { productPrice ->
         productPriceRepository.save(
-                ProductPrice(
+                ProductPriceDocument(
                         productPrice.id,
                         current_price.value ?: productPrice.value,
                         current_price.currency_code ?: productPrice.currency_code

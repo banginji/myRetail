@@ -1,7 +1,7 @@
 package com.myretail.service.config
 
 import com.myretail.service.handler.ProductHandler
-import com.myretail.service.persistence.ProductPrice
+import com.myretail.service.persistence.ProductPriceDocument
 import com.myretail.service.repository.ProductPriceRepository
 import org.springframework.boot.CommandLineRunner
 import org.springframework.context.support.beans
@@ -13,12 +13,12 @@ fun beans() = beans {
     bean {
         CommandLineRunner {
             val productPrices = Flux.just(
-                    ProductPrice(123, 14.23, "USD"),
-                    ProductPrice(234, 74.24, "USD"),
-                    ProductPrice(345, 593.53, "EUR"),
-                    ProductPrice(456, 53.55, "USD"),
-                    ProductPrice(13860428, 1193.33, "USD"),
-                    ProductPrice(567, 93.33, "EUR")
+                    ProductPriceDocument(123, 14.23, "USD"),
+                    ProductPriceDocument(234, 74.24, "USD"),
+                    ProductPriceDocument(345, 593.53, "EUR"),
+                    ProductPriceDocument(456, 53.55, "USD"),
+                    ProductPriceDocument(13860428, 1193.33, "USD"),
+                    ProductPriceDocument(567, 93.33, "EUR")
             )
 
             ref<ProductPriceRepository>().deleteAll()

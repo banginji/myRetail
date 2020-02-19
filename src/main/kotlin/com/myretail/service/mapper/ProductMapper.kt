@@ -1,12 +1,9 @@
 package com.myretail.service.mapper
 
 import com.myretail.service.domain.*
-import com.myretail.service.domain.price.CurrentPrice
-import com.myretail.service.domain.price.ProductPriceError
-import com.myretail.service.domain.price.UpdateProductPriceRequest
-import com.myretail.service.domain.price.ProductPriceResponse
+import com.myretail.service.domain.price.*
 import com.myretail.service.domain.redsky.RedSkyResponse
-import com.myretail.service.persistence.ProductPrice
+import com.myretail.service.persistence.ProductPriceDocument
 import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.ServerResponse.ok
@@ -27,8 +24,16 @@ fun retrieveDataMapper() = BiFunction<ProductPriceResponse, RedSkyResponse, Prod
 
 fun updateDataMapper() = Function<UpdateProductRequest, UpdateProductPriceRequest> { (current_price) -> UpdateProductPriceRequest(current_price) }
 
-fun productPriceResponseMapper() = Function<ProductPrice?, Mono<ProductPriceResponse>> {
-    it?.let { Mono.just(ProductPriceResponse(it)) } ?: Mono.just(ProductPriceResponse(null, ProductPriceError("price not found in data store")))
+fun productPriceResponseMapper() = Function<ProductPriceDocument?, Mono<ProductPriceResponse>> {
+    it
+            ?.let {
+                Mono.just(
+                        ProductPriceResponse(
+                                ProductPrice(it.id, it.value, it.currency_code)
+                        )
+                )
+            }
+            ?: Mono.just(ProductPriceResponse(null, ProductPriceError("price not found in data store")))
 }
 
 fun getResponseMapper() = Function<ProductResponse, Mono<ServerResponse>> {

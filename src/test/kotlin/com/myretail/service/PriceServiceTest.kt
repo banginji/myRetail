@@ -1,10 +1,7 @@
 package com.myretail.service
 
-import com.myretail.service.domain.price.CurrentPrice
-import com.myretail.service.domain.price.ProductPriceError
-import com.myretail.service.domain.price.UpdateProductPriceRequest
-import com.myretail.service.domain.price.ProductPriceResponse
-import com.myretail.service.persistence.ProductPrice
+import com.myretail.service.domain.price.*
+import com.myretail.service.persistence.ProductPriceDocument
 import com.myretail.service.repository.ProductPriceRepository
 import com.myretail.service.service.PriceService
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -66,7 +63,7 @@ class PriceServiceTest {
 
         Mockito
                 .`when`(productPriceRepository.findById(id))
-                .thenReturn(Mono.just(ProductPrice(id, value, currencyCode)))
+                .thenReturn(Mono.just(ProductPriceDocument(id, value, currencyCode)))
 
         val productProductResponse = ProductPriceResponse(ProductPrice(id, value, currencyCode))
 
@@ -98,7 +95,7 @@ class PriceServiceTest {
         val value = 1.1
         val currencyCode = "USD"
 
-        val productPrice = ProductPrice(id, value, currencyCode)
+        val productPrice = ProductPriceDocument(id, value, currencyCode)
 
         Mockito
                 .`when`(productPriceRepository.findById(id))
@@ -108,7 +105,7 @@ class PriceServiceTest {
         val newCurrencyCode = "EUR"
         val updateProductPriceRequest = UpdateProductPriceRequest(CurrentPrice(newValue, newCurrencyCode))
 
-        val updatedProductPrice = ProductPrice(id, newValue, newCurrencyCode)
+        val updatedProductPrice = ProductPriceDocument(id, newValue, newCurrencyCode)
         Mockito
                 .`when`(productPriceRepository.save(updatedProductPrice))
                 .thenReturn(Mono.just(updatedProductPrice))
@@ -125,7 +122,7 @@ class PriceServiceTest {
 
         Mockito
                 .`when`(productPriceRepository.findById(id))
-                .thenReturn(Mono.empty<ProductPrice>())
+                .thenReturn(Mono.empty<ProductPriceDocument>())
 
         val newValue = 2.2
         val newCurrencyCode = "EUR"
