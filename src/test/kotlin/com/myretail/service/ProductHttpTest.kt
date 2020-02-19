@@ -1,35 +1,34 @@
 package com.myretail.service
 
 import com.myretail.service.config.routes
+import com.myretail.service.domain.ProductResponse
+import com.myretail.service.domain.price.CurrentPrice
 import com.myretail.service.domain.price.ProductPriceError
-import com.myretail.service.domain.price.ProductPriceResponse
-import com.myretail.service.domain.redsky.*
+import com.myretail.service.domain.redsky.RedSkyError
 import com.myretail.service.handler.ProductHandler
-import com.myretail.service.persistence.ProductPrice
-import com.myretail.service.service.PriceService
-import com.myretail.service.service.RedSkyService
+import com.myretail.service.service.ProductViewService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.http.HttpStatus
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.web.reactive.function.server.ServerResponse
+import org.springframework.web.reactive.function.server.body
 import reactor.core.publisher.Mono
 
 @WebFluxTest
 class ProductHttpTest {
     @MockBean
-    private lateinit var priceService: PriceService
-
-    @MockBean
-    private lateinit var redSkyService: RedSkyService
+    private lateinit var productViewService: ProductViewService
 
     private lateinit var client: WebTestClient
     private lateinit var productHandler: ProductHandler
 
     @BeforeEach
     fun beforeEach() {
-        productHandler = Mockito.spy(ProductHandler(priceService, redSkyService))
+        productHandler = Mockito.spy(ProductHandler(productViewService))
         client = WebTestClient.bindToRouterFunction(routes(productHandler)).build()
     }
 
@@ -38,14 +37,12 @@ class ProductHttpTest {
         val id = 8
         val value = 15.3
         val currencyCode = "USD"
-        val productPriceResponse = ProductPriceResponse(ProductPrice(id, value, currencyCode))
-
-        Mockito.doReturn(Mono.just(productPriceResponse)).`when`(priceService).getProductPrice(id)
-
         val title = "item1"
-        val redSkyResponse = RedSkyResponse(RedSkyProduct(RedSkyProductItem(id.toString(), RedSkyProductItemDesc(title))), null)
 
-        Mockito.doReturn(Mono.just(redSkyResponse)).`when`(redSkyService).getProductTitle(id)
+        val productResponse = ProductResponse(id, title, CurrentPrice(value, currencyCode), emptyList())
+        Mockito
+                .`when`(productViewService.getProductInfo(id))
+                .thenReturn(ServerResponse.ok().body<ProductResponse>(Mono.just(productResponse)))
 
         /**
          * {
@@ -81,14 +78,12 @@ class ProductHttpTest {
         val value = 15.3
         val currencyCode = "USD"
 
-        val productPriceResponse = ProductPriceResponse(ProductPrice(id, value, currencyCode))
-
-        Mockito.doReturn(Mono.just(productPriceResponse)).`when`(priceService).getProductPrice(id)
-
         val redSkyErrorMessage = "could not retrieve title from redsky: (Retries exhausted: 3/3)"
-        val redSkyResponse = RedSkyResponse(null, RedSkyError(redSkyErrorMessage))
 
-        Mockito.doReturn(Mono.just(redSkyResponse)).`when`(redSkyService).getProductTitle(id)
+        val productResponse = ProductResponse(id, null, CurrentPrice(value, currencyCode), listOf(RedSkyError(redSkyErrorMessage)))
+        Mockito
+                .`when`(productViewService.getProductInfo(id))
+                .thenReturn(ServerResponse.ok().body<ProductResponse>(Mono.just(productResponse)))
 
         /**
          * {
@@ -126,16 +121,13 @@ class ProductHttpTest {
     @Test
     fun `get product response when data not exist in data store but exists in redsky`() {
         val id = 8
+        val title = "item1"
         val productPriceError = "price not found in data store"
 
-        val productPriceResponse = ProductPriceResponse(null, ProductPriceError(productPriceError))
-
-        Mockito.doReturn(Mono.just(productPriceResponse)).`when`(priceService).getProductPrice(id)
-
-        val title = "item1"
-        val redSkyResponse = RedSkyResponse(RedSkyProduct(RedSkyProductItem(id.toString(), RedSkyProductItemDesc(title))), null)
-
-        Mockito.doReturn(Mono.just(redSkyResponse)).`when`(redSkyService).getProductTitle(id)
+        val productResponse = ProductResponse(id, title, null, listOf(ProductPriceError(productPriceError)))
+        Mockito
+                .`when`(productViewService.getProductInfo(id))
+                .thenReturn(ServerResponse.ok().body<ProductResponse>(Mono.just(productResponse)))
 
         /**
          * {
@@ -172,13 +164,10 @@ class ProductHttpTest {
         val redSkyErrorMessage = "could not retrieve title from redsky: (Retries exhausted: 3/3)"
         val productPriceError = "price not found in data store"
 
-        val productPriceResponse = ProductPriceResponse(null, ProductPriceError(productPriceError))
-
-        Mockito.doReturn(Mono.just(productPriceResponse)).`when`(priceService).getProductPrice(id)
-
-        val redSkyResponse = RedSkyResponse(null, RedSkyError(redSkyErrorMessage))
-
-        Mockito.doReturn(Mono.just(redSkyResponse)).`when`(redSkyService).getProductTitle(id)
+        val productResponse = ProductResponse(null, null, null, listOf(ProductPriceError(productPriceError), RedSkyError(redSkyErrorMessage)))
+        Mockito
+                .`when`(productViewService.getProductInfo(id))
+                .thenReturn(ServerResponse.status(HttpStatus.NOT_FOUND).body<ProductResponse>(Mono.just(productResponse)))
 
         /**
          * {
