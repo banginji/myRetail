@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono
 import java.util.function.Function
 
 @Service
-class ProductViewService(val priceService: PriceService, val redSkyService: RedSkyService) {
+class ProductService(val priceService: PriceService, val redSkyService: RedSkyService) {
     fun getProductInfo(id: Int) = Flux
             .combineLatest(
                     priceService.getProductPrice(id),

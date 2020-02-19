@@ -1,7 +1,7 @@
 package com.myretail.service.handler
 
 import com.myretail.service.domain.UpdateProductRequest
-import com.myretail.service.service.ProductViewService
+import com.myretail.service.service.ProductService
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
@@ -9,12 +9,12 @@ import org.springframework.web.reactive.function.server.bodyToMono
 import reactor.core.publisher.Mono
 
 @Service
-class ProductHandler(val productViewService: ProductViewService) {
+class ProductHandler(val productService: ProductService) {
 
     fun getProductInfo(request: ServerRequest): Mono<ServerResponse> {
         val id = request.pathVariable("id").toIntOrNull() ?: -1
 
-        return productViewService.getProductInfo(id)
+        return productService.getProductInfo(id)
     }
 
     fun updateProductPrice(request: ServerRequest): Mono<ServerResponse> {
@@ -22,7 +22,7 @@ class ProductHandler(val productViewService: ProductViewService) {
 
         return request
                 .bodyToMono<UpdateProductRequest>()
-                .transform(productViewService.updateProductPrice(id))
+                .transform(productService.updateProductPrice(id))
     }
 }
 

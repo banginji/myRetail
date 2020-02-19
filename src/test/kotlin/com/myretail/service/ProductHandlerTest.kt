@@ -4,7 +4,7 @@ import com.myretail.service.domain.ProductResponse
 import com.myretail.service.domain.UpdateProductRequest
 import com.myretail.service.domain.price.CurrentPrice
 import com.myretail.service.handler.ProductHandler
-import com.myretail.service.service.ProductViewService
+import com.myretail.service.service.ProductService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -16,14 +16,14 @@ import reactor.test.StepVerifier
 import java.util.function.Function
 
 class ProductHandlerTest {
-    private lateinit var productViewService: ProductViewService
+    private lateinit var productService: ProductService
 
     private lateinit var productHandler: ProductHandler
 
     @BeforeEach
     fun beforeEach() {
-        productViewService = Mockito.mock(ProductViewService::class.java)
-        productHandler = Mockito.spy(ProductHandler(productViewService))
+        productService = Mockito.mock(ProductService::class.java)
+        productHandler = Mockito.spy(ProductHandler(productService))
     }
 
     @Test
@@ -35,7 +35,7 @@ class ProductHandlerTest {
 
         val productResponse = ProductResponse(id, title, CurrentPrice(value, currencyCode), emptyList())
         Mockito
-                .`when`(productViewService.getProductInfo(id))
+                .`when`(productService.getProductInfo(id))
                 .thenReturn(ok().body<ProductResponse>(Mono.just(productResponse)))
 
         val serverRequest = MockServerRequest.builder().pathVariable("id", id.toString()).build()
@@ -51,7 +51,7 @@ class ProductHandlerTest {
         val id = 1
 
         Mockito
-                .`when`(productViewService.updateProductPrice(id))
+                .`when`(productService.updateProductPrice(id))
                 .thenReturn(Function { ok().build() })
 
         val newValue = 2.2

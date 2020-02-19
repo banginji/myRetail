@@ -7,7 +7,7 @@ import com.myretail.service.domain.price.ProductPriceError
 import com.myretail.service.domain.price.ProductPriceResponse
 import com.myretail.service.domain.redsky.*
 import com.myretail.service.service.PriceService
-import com.myretail.service.service.ProductViewService
+import com.myretail.service.service.ProductService
 import com.myretail.service.service.RedSkyService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -23,13 +23,13 @@ class ProductViewServiceTest {
     private lateinit var priceService: PriceService
     private lateinit var redSkyService: RedSkyService
 
-    private lateinit var productViewService: ProductViewService
+    private lateinit var productService: ProductService
 
     @BeforeEach
     fun beforeEach() {
         priceService = Mockito.mock(PriceService::class.java)
         redSkyService = Mockito.mock(RedSkyService::class.java)
-        productViewService = Mockito.spy(ProductViewService(priceService, redSkyService))
+        productService = Mockito.spy(ProductService(priceService, redSkyService))
     }
 
     @Test
@@ -48,7 +48,7 @@ class ProductViewServiceTest {
         Mockito.doReturn(Mono.just(redSkyResponse)).`when`(redSkyService).getProductTitle(id)
 
         StepVerifier
-                .create(productViewService.getProductInfo(id))
+                .create(productService.getProductInfo(id))
                 .expectNextMatches { it.statusCode().is2xxSuccessful }
                 .verifyComplete()
     }
@@ -67,7 +67,7 @@ class ProductViewServiceTest {
         Mockito.doReturn(Mono.just(redSkyResponse)).`when`(redSkyService).getProductTitle(id)
 
         StepVerifier
-                .create(productViewService.getProductInfo(id))
+                .create(productService.getProductInfo(id))
                 .expectNextMatches { it.statusCode().is2xxSuccessful }
                 .verifyComplete()
     }
@@ -85,7 +85,7 @@ class ProductViewServiceTest {
         Mockito.doReturn(Mono.just(redSkyResponse)).`when`(redSkyService).getProductTitle(id)
 
         StepVerifier
-                .create(productViewService.getProductInfo(id))
+                .create(productService.getProductInfo(id))
                 .expectNextMatches { it.statusCode().is4xxClientError }
                 .verifyComplete()
     }
@@ -102,7 +102,7 @@ class ProductViewServiceTest {
         val newCurrencyCode = "EUR"
         val updateProductRequest = Mono.just(UpdateProductRequest(CurrentPrice(newValue, newCurrencyCode)))
 
-        val response = productViewService.updateProductPrice(id)
+        val response = productService.updateProductPrice(id)
         assertEquals(response.apply(updateProductRequest).block()?.statusCode(), HttpStatus.OK)
     }
 }

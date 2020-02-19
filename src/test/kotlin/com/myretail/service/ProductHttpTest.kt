@@ -6,7 +6,7 @@ import com.myretail.service.domain.price.CurrentPrice
 import com.myretail.service.domain.price.ProductPriceError
 import com.myretail.service.domain.redsky.RedSkyError
 import com.myretail.service.handler.ProductHandler
-import com.myretail.service.service.ProductViewService
+import com.myretail.service.service.ProductService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -21,14 +21,14 @@ import reactor.core.publisher.Mono
 @WebFluxTest
 class ProductHttpTest {
     @MockBean
-    private lateinit var productViewService: ProductViewService
+    private lateinit var productService: ProductService
 
     private lateinit var client: WebTestClient
     private lateinit var productHandler: ProductHandler
 
     @BeforeEach
     fun beforeEach() {
-        productHandler = Mockito.spy(ProductHandler(productViewService))
+        productHandler = Mockito.spy(ProductHandler(productService))
         client = WebTestClient.bindToRouterFunction(routes(productHandler)).build()
     }
 
@@ -41,7 +41,7 @@ class ProductHttpTest {
 
         val productResponse = ProductResponse(id, title, CurrentPrice(value, currencyCode), emptyList())
         Mockito
-                .`when`(productViewService.getProductInfo(id))
+                .`when`(productService.getProductInfo(id))
                 .thenReturn(ServerResponse.ok().body<ProductResponse>(Mono.just(productResponse)))
 
         /**
@@ -82,7 +82,7 @@ class ProductHttpTest {
 
         val productResponse = ProductResponse(id, null, CurrentPrice(value, currencyCode), listOf(RedSkyError(redSkyErrorMessage)))
         Mockito
-                .`when`(productViewService.getProductInfo(id))
+                .`when`(productService.getProductInfo(id))
                 .thenReturn(ServerResponse.ok().body<ProductResponse>(Mono.just(productResponse)))
 
         /**
@@ -126,7 +126,7 @@ class ProductHttpTest {
 
         val productResponse = ProductResponse(id, title, null, listOf(ProductPriceError(productPriceError)))
         Mockito
-                .`when`(productViewService.getProductInfo(id))
+                .`when`(productService.getProductInfo(id))
                 .thenReturn(ServerResponse.ok().body<ProductResponse>(Mono.just(productResponse)))
 
         /**
@@ -166,7 +166,7 @@ class ProductHttpTest {
 
         val productResponse = ProductResponse(null, null, null, listOf(ProductPriceError(productPriceError), RedSkyError(redSkyErrorMessage)))
         Mockito
-                .`when`(productViewService.getProductInfo(id))
+                .`when`(productService.getProductInfo(id))
                 .thenReturn(ServerResponse.status(HttpStatus.NOT_FOUND).body<ProductResponse>(Mono.just(productResponse)))
 
         /**
