@@ -18,12 +18,12 @@ They also have the capability to update the price of the item
 The application can be deployed and scaled horizontally as required. The data store used should be decided though because each data store is
 tailored for a particular use case and the right one has to be chosen based on a consensus
 
-#### Work regarding scaling the code
+### Work regarding scaling the code
 The application can be containerized and deployed as containers in a cluster which can either grow
 in size or run lesser number of containers based on the traffic to the application. For this an appropriate data store has to be
 chosen as well to handle the load while keeping in mind the capacity of the redsky servers
 
-#### Testing
+### Testing
 Unit and integration tests have been written to make sure that the functionality is maintained in the code
 
 ### Instructions for running the service
