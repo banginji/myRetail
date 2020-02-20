@@ -15,7 +15,7 @@ class RedSkyServiceTest {
 
     @BeforeEach
     fun beforeEach() {
-        redSkyService = Mockito.spy(RedSkyService())
+        redSkyService = Mockito.spy(RedSkyService("some host"))
     }
 
     @Test

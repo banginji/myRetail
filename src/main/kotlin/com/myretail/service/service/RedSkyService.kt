@@ -2,6 +2,7 @@ package com.myretail.service.service
 
 import com.myretail.service.domain.redsky.RedSkyError
 import com.myretail.service.domain.redsky.RedSkyResponse
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
@@ -11,8 +12,7 @@ import java.time.Duration
 import java.util.function.Function
 
 @Service
-class RedSkyService {
-    private val host = "https://redsky.target.com"
+class RedSkyService(@Value("\${redsky.host:https://redsky.target.com}") private val host: String) {
     private val webClient: WebClient = WebClient.create(host)
 
     fun getProductTitle(id: Int) = Flux

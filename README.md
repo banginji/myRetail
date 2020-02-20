@@ -12,20 +12,19 @@ This application is a poc of a products API which aggregates data (price and tit
 ### Completeness
 #### Are problems addressed?
 The problem, which is to provide aggregated data to clients, has been addressed by providing an API for the clients to invoke and obtain the data.
-They also have the capability to update the price of the item.
+They also have the capability to update the price of the item
 
 #### Is it production ready?
-The application can be containerized and deployed horizontally in case of increase in traffic.
-The data store used should be decided though because each data store is tailored for a particular use case and the right one
-has to be chosen based on a consensus.
+The application can be deployed and scaled horizontally as required. The data store used should be decided though because each data store is
+tailored for a particular use case and the right one has to be chosen based on a consensus
 
 #### Work regarding scaling the code
-The application is horizontally scalable if it is containerized and deployed as containers in a cluster which can either grow
-in size run lesser number of containers based on the traffic to the application. For this an appropriate data store has to be
-chosen as well to handle the load
+The application can be containerized and deployed as containers in a cluster which can either grow
+in size or run lesser number of containers based on the traffic to the application. For this an appropriate data store has to be
+chosen as well to handle the load while keeping in mind the capacity of the redsky servers
 
 #### Testing
-Unit tests have been written to make sure that the functionality is maintained in the code
+Unit and integration tests have been written to make sure that the functionality is maintained in the code
 
 ### Instructions for running the service
 Requirements to run the code

@@ -25,7 +25,7 @@ import java.util.function.Function
 
 @WebFluxTest
 @Import(ProductHandler::class, ProductService::class, PriceService::class)
-class ProductHttpTest(@Autowired private val productHandler: ProductHandler) {
+class ProductIntegrationTest(@Autowired private val productHandler: ProductHandler) {
     @MockBean
     private lateinit var productPriceRepository: ProductPriceRepository
 
