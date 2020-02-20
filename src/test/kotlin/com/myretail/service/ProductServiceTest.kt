@@ -19,7 +19,7 @@ import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import java.util.function.Function
 
-class ProductViewServiceTest {
+class ProductServiceTest {
     private lateinit var priceService: PriceService
     private lateinit var redSkyService: RedSkyService
 
