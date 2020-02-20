@@ -2,7 +2,6 @@ package com.myretail.service
 
 import com.myretail.service.domain.redsky.*
 import com.myretail.service.service.RedSkyService
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -20,20 +19,7 @@ class RedSkyServiceTest {
     }
 
     @Test
-    fun getProductTitle() {
-        val id = 1
-        val title = "item1"
-
-        val redSkyResponse = RedSkyResponse(RedSkyProduct(RedSkyProductItem(id.toString(), RedSkyProductItemDesc(title))), null)
-        Mockito.doReturn(Mono.just(redSkyResponse)).`when`(redSkyService).getProductTitle(id)
-
-        val actualRedSkyResponse = redSkyService.getProductTitle(id).block()
-        assertEquals(actualRedSkyResponse?.product?.item?.tcin, id.toString())
-        assertEquals(actualRedSkyResponse?.product?.item?.product_description?.title, title)
-    }
-
-    @Test
-    fun getProductTitle_whenDataIsPresentInRedsky() {
+    fun `getProductTitle when data is present in redsky`() {
         val id = 8
 
         val title = "item1"
@@ -50,7 +36,7 @@ class RedSkyServiceTest {
     }
 
     @Test
-    fun getProductTitle_whenDataIsNotPresentInRedsky() {
+    fun `getProductTitle when data is not present in redsky`() {
         val id = 8
 
         val redSkyErrorMessage = "could not retrieve title from redsky: (Retries exhausted: 3/3)"

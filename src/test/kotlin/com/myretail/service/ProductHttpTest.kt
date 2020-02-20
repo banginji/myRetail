@@ -14,32 +14,28 @@ import com.myretail.service.service.RedSkyService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.boot.test.mock.mockito.SpyBean
+import org.springframework.context.annotation.Import
 import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Mono
 import java.util.function.Function
 
 @WebFluxTest
-class ProductHttpTest {
+@Import(ProductHandler::class, ProductService::class, PriceService::class)
+class ProductHttpTest(@Autowired private val productHandler: ProductHandler) {
     @MockBean
     private lateinit var productPriceRepository: ProductPriceRepository
 
-    private lateinit var priceService: PriceService
-
+    @SpyBean
     private lateinit var redSkyService: RedSkyService
 
-    private lateinit var productService: ProductService
-
     private lateinit var client: WebTestClient
-    private lateinit var productHandler: ProductHandler
 
     @BeforeEach
     fun beforeEach() {
-        priceService = Mockito.spy(PriceService(productPriceRepository))
-        redSkyService = Mockito.spy(RedSkyService())
-        productService = Mockito.spy(ProductService(priceService, redSkyService))
-        productHandler = Mockito.spy(ProductHandler(productService))
         client = WebTestClient.bindToRouterFunction(routes(productHandler)).build()
     }
 

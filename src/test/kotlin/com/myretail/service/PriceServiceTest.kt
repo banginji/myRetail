@@ -56,7 +56,7 @@ class PriceServiceTest {
     }
 
     @Test
-    fun getProductPrice_whenDataIsPresentInDataStore() {
+    fun `getProductPrice when data is present in data store`() {
         val id = 1
         val value = 1.1
         val currencyCode = "USD"
@@ -74,7 +74,7 @@ class PriceServiceTest {
     }
 
     @Test
-    fun getProductPrice_whenDataIsNotPresentInDataStore() {
+    fun `getProductPrice when data is not present in data store`() {
         val id = 1
 
         Mockito
@@ -90,7 +90,7 @@ class PriceServiceTest {
     }
 
     @Test
-    fun updateExistingProductPrice_forAnExistingProduct() {
+    fun `updateExistingProductPrice for an existing product`() {
         val id = 1
         val value = 1.1
         val currencyCode = "USD"
@@ -117,7 +117,7 @@ class PriceServiceTest {
     }
 
     @Test
-    fun updateExistingProductPrice_forANonExistingProduct() {
+    fun `updateExistingProductPrice for a non existing product`() {
         val id = 1
 
         Mockito

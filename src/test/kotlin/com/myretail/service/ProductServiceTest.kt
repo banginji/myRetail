@@ -33,7 +33,7 @@ class ProductServiceTest {
     }
 
     @Test
-    fun getProductInfo_forSuccessfulAggregationOfDataAcrossMultipleSources() {
+    fun `getProductInfo for successful aggregation of data across multiple sources`() {
         val id = 1
         val value = 1.1
         val currencyCode = "USD"
@@ -54,7 +54,7 @@ class ProductServiceTest {
     }
 
     @Test
-    fun getProductInfo_forSuccessfulAggregationFromAtLeastOneSource() {
+    fun `getProductInfo for successful aggregation from at least one source`() {
         val id = 1
 
         val productPriceResponse = ProductPriceResponse(null, ProductPriceError("product error"))
@@ -73,7 +73,7 @@ class ProductServiceTest {
     }
 
     @Test
-    fun getProductInfo_forFailureToObtainFromTwoSources() {
+    fun `getProductInfo for failure to obtain from two sources`() {
         val id = 1
 
         val productPriceResponse = ProductPriceResponse(null, ProductPriceError("product error"))
