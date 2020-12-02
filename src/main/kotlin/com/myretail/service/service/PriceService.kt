@@ -1,10 +1,10 @@
 package com.myretail.service.service
 
+import com.myretail.service.converter.PriceResponseConverter
 import com.myretail.service.domain.ProductError
 import com.myretail.service.domain.price.CurrentPrice
 import com.myretail.service.domain.price.ProductPriceResponse
 import com.myretail.service.domain.price.UpdateProductPriceRequest
-import com.myretail.service.mapper.productPriceResponseMapper
 import com.myretail.service.persistence.ProductPriceDocument
 import com.myretail.service.repository.ProductPriceRepository
 import kotlinx.coroutines.reactive.awaitFirstOrElse
@@ -17,12 +17,15 @@ import reactor.core.publisher.Mono
 import java.util.function.Function
 
 @Service
-class PriceService(val productPriceRepository: ProductPriceRepository) {
-    suspend fun getProductPrice(id: Int): ProductPriceResponse = findProductPriceById(id)
-            .map(productPriceResponseMapper())
-            .awaitFirstOrElse { ProductPriceResponse(null, ProductError("price not found in data store")) }
+class PriceService(
+        private val productPriceRepository: ProductPriceRepository,
+        private val priceResponseConverter: PriceResponseConverter
+) {
+    suspend fun getProductPrice(id: Int): ProductPriceResponse = findProductPriceById(id).map { priceResponseConverter.convert(it) }.awaitFirstOrElse { priceNotFound() }
 
-    fun updateProductPrice(id: Int) = Function<UpdateProductPriceRequest, Mono<ServerResponse>>{ updateExistingProductPrice(id, it) }
+    private fun priceNotFound() = ProductPriceResponse(null, ProductError("price not found in data store"))
+
+    fun updateProductPrice(id: Int) = Function<UpdateProductPriceRequest, Mono<ServerResponse>> { updateExistingProductPrice(id, it) }
 
     fun updateExistingProductPrice(id: Int, updateProductPriceRequest: UpdateProductPriceRequest) =
             findProductPriceById(id)

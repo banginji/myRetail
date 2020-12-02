@@ -33,7 +33,7 @@ fun beans() = beans {
     bean {
         toSchema(
                 config = SchemaGeneratorConfig(supportedPackages = listOf("com.myretail.service.domain")),
-                queries = listOf(TopLevelObject(ProductQuery(ref(), ref())))
+                queries = listOf(TopLevelObject(ProductQuery(ref())))
         )
     }
 }
