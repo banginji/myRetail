@@ -49,7 +49,7 @@ class PriceServiceTest {
 
         val productPriceRequest = UpdateProductPriceRequest(CurrentPrice(value, currencyCode))
 
-        every { priceService.updateExistingProductPrice(id, productPriceRequest) } returns ok().build()
+        every { priceService.updateProductPrice(id, productPriceRequest) } returns ok().build()
 
         val response = priceService.updateProductPrice(id)
         assertEquals(response.apply(productPriceRequest).block()?.statusCode(), HttpStatus.OK)
@@ -104,7 +104,7 @@ class PriceServiceTest {
         every { productPriceRepository.save(updatedProductPrice) } returns Mono.just(updatedProductPrice)
 
         StepVerifier
-                .create(priceService.updateExistingProductPrice(id, updateProductPriceRequest))
+                .create(priceService.updateProductPrice(id, updateProductPriceRequest))
                 .expectNextMatches { it.statusCode().is2xxSuccessful }
                 .verifyComplete()
     }
@@ -120,7 +120,7 @@ class PriceServiceTest {
         val updateProductPriceRequest = UpdateProductPriceRequest(CurrentPrice(newValue, newCurrencyCode))
 
         StepVerifier
-                .create(priceService.updateExistingProductPrice(id, updateProductPriceRequest))
+                .create(priceService.updateProductPrice(id, updateProductPriceRequest))
                 .expectNextMatches { it.statusCode().is4xxClientError }
                 .verifyComplete()
     }
