@@ -1,10 +1,13 @@
 package com.myretail.service.service
 
+import com.myretail.service.domain.ProductError
 import com.myretail.service.domain.price.CurrentPrice
+import com.myretail.service.domain.price.ProductPriceResponse
 import com.myretail.service.domain.price.UpdateProductPriceRequest
 import com.myretail.service.mapper.productPriceResponseMapper
 import com.myretail.service.persistence.ProductPriceDocument
 import com.myretail.service.repository.ProductPriceRepository
+import kotlinx.coroutines.reactive.awaitFirstOrElse
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.server.ServerResponse
@@ -15,10 +18,9 @@ import java.util.function.Function
 
 @Service
 class PriceService(val productPriceRepository: ProductPriceRepository) {
-    fun getProductPrice(id: Int) =
-            findProductPriceById(id)
-                    .flatMap(productPriceResponseMapper())
-                    .switchIfEmpty(productPriceResponseMapper().apply(null))
+    suspend fun getProductPrice(id: Int): ProductPriceResponse = findProductPriceById(id)
+            .map(productPriceResponseMapper())
+            .awaitFirstOrElse { ProductPriceResponse(null, ProductError("price not found in data store")) }
 
     fun updateProductPrice(id: Int) = Function<UpdateProductPriceRequest, Mono<ServerResponse>>{ updateExistingProductPrice(id, it) }
 

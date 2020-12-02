@@ -9,10 +9,12 @@ import com.myretail.service.domain.redsky.*
 import com.myretail.service.service.PriceService
 import com.myretail.service.service.ProductService
 import com.myretail.service.service.RedSkyService
+import io.mockk.every
+import io.mockk.mockkClass
+import io.mockk.spyk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
@@ -27,9 +29,9 @@ class ProductServiceTest {
 
     @BeforeEach
     fun beforeEach() {
-        priceService = Mockito.mock(PriceService::class.java)
-        redSkyService = Mockito.mock(RedSkyService::class.java)
-        productService = Mockito.spy(ProductService(priceService, redSkyService))
+        priceService = mockkClass(PriceService::class)
+        redSkyService = mockkClass(RedSkyService::class)
+        productService = spyk(ProductService(priceService, redSkyService))
     }
 
     @Test
@@ -40,12 +42,12 @@ class ProductServiceTest {
 
         val productPriceResponse = ProductPriceResponse(ProductPrice(id, value, currencyCode))
 
-        Mockito.doReturn(Mono.just(productPriceResponse)).`when`(priceService).getProductPrice(id)
+        every { priceService.getProductPrice(id) } returns Mono.just(productPriceResponse)
 
         val title = "item1"
         val redSkyResponse = RedSkyResponse(RedSkyProduct(RedSkyProductItem(id.toString(), RedSkyProductItemDesc(title))), null)
 
-        Mockito.doReturn(Mono.just(redSkyResponse)).`when`(redSkyService).getProductTitle(id)
+        every { redSkyService.getProductTitle(id) } returns Mono.just(redSkyResponse)
 
         StepVerifier
                 .create(productService.getProductInfo(id))
@@ -59,12 +61,12 @@ class ProductServiceTest {
 
         val productPriceResponse = ProductPriceResponse(null, ProductPriceError("product error"))
 
-        Mockito.doReturn(Mono.just(productPriceResponse)).`when`(priceService).getProductPrice(id)
+        every { priceService.getProductPrice(id) } returns Mono.just(productPriceResponse)
 
         val title = "item1"
         val redSkyResponse = RedSkyResponse(RedSkyProduct(RedSkyProductItem(id.toString(), RedSkyProductItemDesc(title))), null)
 
-        Mockito.doReturn(Mono.just(redSkyResponse)).`when`(redSkyService).getProductTitle(id)
+        every { redSkyService.getProductTitle(id) } returns Mono.just(redSkyResponse)
 
         StepVerifier
                 .create(productService.getProductInfo(id))
@@ -78,11 +80,11 @@ class ProductServiceTest {
 
         val productPriceResponse = ProductPriceResponse(null, ProductPriceError("product error"))
 
-        Mockito.doReturn(Mono.just(productPriceResponse)).`when`(priceService).getProductPrice(id)
+        every { priceService.getProductPrice(id) } returns Mono.just(productPriceResponse)
 
         val redSkyResponse = RedSkyResponse(null, RedSkyError("redsky error"))
 
-        Mockito.doReturn(Mono.just(redSkyResponse)).`when`(redSkyService).getProductTitle(id)
+        every { redSkyService.getProductTitle(id) } returns Mono.just(redSkyResponse)
 
         StepVerifier
                 .create(productService.getProductInfo(id))
@@ -94,9 +96,7 @@ class ProductServiceTest {
     fun updateProductPrice() {
         val id = 1
 
-        Mockito
-                .`when`(priceService.updateProductPrice(id))
-                .thenReturn(Function { ServerResponse.ok().build() })
+        every { priceService.updateProductPrice(id) } returns Function { ServerResponse.ok().build() }
 
         val newValue = 2.2
         val newCurrencyCode = "EUR"

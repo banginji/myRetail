@@ -24,10 +24,10 @@ fun retrieveDataMapper() = BiFunction<ProductPriceResponse, RedSkyResponse, Prod
 
 fun updateDataMapper() = Function<UpdateProductRequest, UpdateProductPriceRequest> { (current_price) -> UpdateProductPriceRequest(current_price) }
 
-fun productPriceResponseMapper() = Function<ProductPriceDocument?, Mono<ProductPriceResponse>> {
+fun productPriceResponseMapper() = Function<ProductPriceDocument?, ProductPriceResponse> {
     it
-            ?.let { Mono.just(ProductPriceResponse(ProductPrice(it.id, it.value, it.currency_code))) }
-            ?: Mono.just(ProductPriceResponse(null, ProductPriceError("price not found in data store")))
+            ?.let { ProductPriceResponse(ProductPrice(it.id, it.value, it.currency_code)) }
+            ?: ProductPriceResponse(null, ProductError("price not found in data store"))
 }
 
 fun getResponseMapper() = Function<ProductResponse, Mono<ServerResponse>> {

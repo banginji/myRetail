@@ -1,5 +1,9 @@
 package com.myretail.service.config
 
+import com.expediagroup.graphql.SchemaGeneratorConfig
+import com.expediagroup.graphql.TopLevelObject
+import com.expediagroup.graphql.toSchema
+import com.myretail.service.graphql.ProductQuery
 import com.myretail.service.handler.ProductHandler
 import com.myretail.service.persistence.ProductPriceDocument
 import com.myretail.service.repository.ProductPriceRepository
@@ -9,7 +13,7 @@ import org.springframework.web.reactive.function.server.router
 import reactor.core.publisher.Flux
 
 fun beans() = beans {
-    bean { routes(ref()) }
+//    bean { routes(ref()) }
     bean {
         CommandLineRunner {
             val productPrices = Flux.just(
@@ -26,11 +30,17 @@ fun beans() = beans {
                     .subscribe(::println)
         }
     }
-}
-
-fun routes(productHandler: ProductHandler) = router {
-    "/product/{id}".nest {
-        GET("", productHandler::getProductInfo)
-        PUT("", productHandler::updateProductPrice)
+    bean {
+        toSchema(
+                config = SchemaGeneratorConfig(supportedPackages = listOf("com.myretail.service.domain")),
+                queries = listOf(TopLevelObject(ProductQuery(ref(), ref())))
+        )
     }
 }
+
+//fun routes(productHandler: ProductHandler) = router {
+//    "/product/{id}".nest {
+//        GET("", productHandler::getProductInfo)
+//        PUT("", productHandler::updateProductPrice)
+//    }
+//}

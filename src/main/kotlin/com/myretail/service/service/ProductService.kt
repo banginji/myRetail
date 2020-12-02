@@ -14,16 +14,7 @@ import java.util.function.Function
 
 @Service
 class ProductService(val priceService: PriceService, val redSkyService: RedSkyService) {
-    fun getProductInfo(id: Int) = Flux
-            .combineLatest(
-                    priceService.getProductPrice(id),
-                    redSkyService.getProductTitle(id),
-                    retrieveDataMapper()
-            )
-            .flatMap(getResponseMapper())
-            .takeLast(1)
-            .next()
-            .onErrorResume(::badRequestResponse)
+    fun getProductInfo(id: Int) = Mono.empty<ServerResponse>()
 
     fun updateProductPrice(id: Int) = Function<Mono<UpdateProductRequest>, Mono<ServerResponse>> {
         it.map(updateDataMapper())

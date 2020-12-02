@@ -2,9 +2,10 @@ package com.myretail.service
 
 import com.myretail.service.domain.redsky.*
 import com.myretail.service.service.RedSkyService
+import io.mockk.every
+import io.mockk.spyk
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import java.time.Duration
@@ -15,7 +16,7 @@ class RedSkyServiceTest {
 
     @BeforeEach
     fun beforeEach() {
-        redSkyService = Mockito.spy(RedSkyService("some host"))
+        redSkyService = spyk(RedSkyService("some host"))
     }
 
     @Test
@@ -25,8 +26,7 @@ class RedSkyServiceTest {
         val title = "item1"
         val redSkyResponse = RedSkyResponse(RedSkyProduct(RedSkyProductItem(id.toString(), RedSkyProductItemDesc(title))), null)
 
-        Mockito.doReturn(Function<Long, Mono<RedSkyResponse>> { Mono.just(redSkyResponse) })
-                .`when`(redSkyService).invokeRedSkyCall(id)
+        every { redSkyService.invokeRedSkyCall(id) } returns Function<Long, Mono<RedSkyResponse>> { Mono.just(redSkyResponse) }
 
         StepVerifier
                 .withVirtualTime { redSkyService.getProductTitle(id) }
@@ -41,8 +41,7 @@ class RedSkyServiceTest {
 
         val redSkyErrorMessage = "could not retrieve title from redsky: (Retries exhausted: 3/3)"
 
-        Mockito.doReturn(Function<Long, Mono<RedSkyResponse>> { Mono.error(Throwable()) })
-                .`when`(redSkyService).invokeRedSkyCall(id)
+        every { redSkyService.invokeRedSkyCall(id) } returns Function<Long, Mono<RedSkyResponse>> { Mono.error(Throwable()) }
 
         StepVerifier
                 .withVirtualTime { redSkyService.getProductTitle(id) }

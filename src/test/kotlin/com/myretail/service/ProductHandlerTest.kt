@@ -5,9 +5,11 @@ import com.myretail.service.domain.UpdateProductRequest
 import com.myretail.service.domain.price.CurrentPrice
 import com.myretail.service.handler.ProductHandler
 import com.myretail.service.service.ProductService
+import io.mockk.every
+import io.mockk.mockkClass
+import io.mockk.spyk
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import org.springframework.mock.web.reactive.function.server.MockServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse.ok
 import org.springframework.web.reactive.function.server.body
@@ -22,8 +24,8 @@ class ProductHandlerTest {
 
     @BeforeEach
     fun beforeEach() {
-        productService = Mockito.mock(ProductService::class.java)
-        productHandler = Mockito.spy(ProductHandler(productService))
+        productService = mockkClass(ProductService::class)
+        productHandler = spyk(ProductHandler(productService))
     }
 
     @Test
@@ -34,9 +36,8 @@ class ProductHandlerTest {
         val title = "item1"
 
         val productResponse = ProductResponse(id, title, CurrentPrice(value, currencyCode), emptyList())
-        Mockito
-                .`when`(productService.getProductInfo(id))
-                .thenReturn(ok().body<ProductResponse>(Mono.just(productResponse)))
+
+        every { productService.getProductInfo(id) } returns ok().body<ProductResponse>(Mono.just(productResponse))
 
         val serverRequest = MockServerRequest.builder().pathVariable("id", id.toString()).build()
 
@@ -50,9 +51,7 @@ class ProductHandlerTest {
     fun updateProductPrice() {
         val id = 1
 
-        Mockito
-                .`when`(productService.updateProductPrice(id))
-                .thenReturn(Function { ok().build() })
+        every { productService.updateProductPrice(id) } returns Function { ok().build() }
 
         val newValue = 2.2
         val newCurrencyCode = "EUR"

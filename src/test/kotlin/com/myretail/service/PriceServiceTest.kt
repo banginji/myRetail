@@ -4,10 +4,10 @@ import com.myretail.service.domain.price.*
 import com.myretail.service.persistence.ProductPriceDocument
 import com.myretail.service.repository.ProductPriceRepository
 import com.myretail.service.service.PriceService
+import io.mockk.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.function.server.ServerResponse.ok
 import reactor.core.publisher.Mono
@@ -20,8 +20,8 @@ class PriceServiceTest {
 
     @BeforeEach
     fun beforeEach() {
-        productPriceRepository = Mockito.mock(ProductPriceRepository::class.java)
-        priceService = Mockito.spy(PriceService(productPriceRepository))
+        productPriceRepository = mockkClass(ProductPriceRepository::class)
+        priceService = spyk(PriceService(productPriceRepository))
     }
 
     @Test
@@ -31,7 +31,7 @@ class PriceServiceTest {
         val currencyCode = "USD"
 
         val productPriceResponse = ProductPriceResponse(ProductPrice(id, value, currencyCode))
-        Mockito.doReturn(Mono.just(productPriceResponse)).`when`(priceService).getProductPrice(id)
+        every { priceService.getProductPrice(id) } returns Mono.just(productPriceResponse)
 
         val actualProductPriceResponse = priceService.getProductPrice(id).block()
 
@@ -49,7 +49,7 @@ class PriceServiceTest {
 
         val productPriceRequest = UpdateProductPriceRequest(CurrentPrice(value, currencyCode))
 
-        Mockito.doReturn(ok().build()).`when`(priceService).updateExistingProductPrice(id, productPriceRequest)
+        every { priceService.updateExistingProductPrice(id, productPriceRequest) } returns ok().build()
 
         val response = priceService.updateProductPrice(id)
         assertEquals(response.apply(productPriceRequest).block()?.statusCode(), HttpStatus.OK)
@@ -61,9 +61,7 @@ class PriceServiceTest {
         val value = 1.1
         val currencyCode = "USD"
 
-        Mockito
-                .`when`(productPriceRepository.findById(id))
-                .thenReturn(Mono.just(ProductPriceDocument(id, value, currencyCode)))
+        every { productPriceRepository.findById(id) } returns Mono.just(ProductPriceDocument(id, value, currencyCode))
 
         val productProductResponse = ProductPriceResponse(ProductPrice(id, value, currencyCode))
 
@@ -77,9 +75,7 @@ class PriceServiceTest {
     fun `getProductPrice when data is not present in data store`() {
         val id = 1
 
-        Mockito
-                .`when`(productPriceRepository.findById(id))
-                .thenReturn(Mono.empty())
+        every { productPriceRepository.findById(id) } returns Mono.empty()
 
         val productProductResponse = ProductPriceResponse(null, ProductPriceError("price not found in data store"))
 
@@ -97,18 +93,15 @@ class PriceServiceTest {
 
         val productPrice = ProductPriceDocument(id, value, currencyCode)
 
-        Mockito
-                .`when`(productPriceRepository.findById(id))
-                .thenReturn(Mono.just(productPrice))
+        every { productPriceRepository.findById(id) } returns Mono.just(productPrice)
 
         val newValue = 2.2
         val newCurrencyCode = "EUR"
         val updateProductPriceRequest = UpdateProductPriceRequest(CurrentPrice(newValue, newCurrencyCode))
 
         val updatedProductPrice = ProductPriceDocument(id, newValue, newCurrencyCode)
-        Mockito
-                .`when`(productPriceRepository.save(updatedProductPrice))
-                .thenReturn(Mono.just(updatedProductPrice))
+
+        every { productPriceRepository.save(updatedProductPrice) } returns Mono.just(updatedProductPrice)
 
         StepVerifier
                 .create(priceService.updateExistingProductPrice(id, updateProductPriceRequest))
@@ -120,9 +113,7 @@ class PriceServiceTest {
     fun `updateExistingProductPrice for a non existing product`() {
         val id = 1
 
-        Mockito
-                .`when`(productPriceRepository.findById(id))
-                .thenReturn(Mono.empty<ProductPriceDocument>())
+        every { productPriceRepository.findById(id) } returns Mono.empty()
 
         val newValue = 2.2
         val newCurrencyCode = "EUR"

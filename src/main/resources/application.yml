@@ -1,0 +1,2 @@
+graphql:
+  packages: com.myretail.service.domain
