@@ -1,4 +1,4 @@
-package com.myretail.service.config
+package com.myretail.service.initializer
 
 import com.expediagroup.graphql.SchemaGeneratorConfig
 import com.expediagroup.graphql.TopLevelObject
@@ -11,7 +11,7 @@ import org.springframework.boot.CommandLineRunner
 import org.springframework.context.support.beans
 import reactor.core.publisher.Flux
 
-fun beans() = beans {
+fun loadData() = beans {
     bean {
         CommandLineRunner {
             val productPrices = Flux.just(
@@ -28,6 +28,9 @@ fun beans() = beans {
                     .subscribe(::println)
         }
     }
+}
+
+fun graphQlBeans() = beans {
     bean {
         toSchema(
                 config = SchemaGeneratorConfig(supportedPackages = listOf("com.myretail.service.domain")),
