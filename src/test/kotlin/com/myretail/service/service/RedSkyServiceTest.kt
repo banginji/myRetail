@@ -5,11 +5,9 @@ import com.myretail.service.domain.redsky.RedSkyProduct
 import com.myretail.service.domain.redsky.RedSkyProductItem
 import com.myretail.service.domain.redsky.RedSkyProductItemDesc
 import com.myretail.service.domain.redsky.RedSkyResponse
-import com.myretail.service.service.RedSkyService
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.spyk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -23,7 +21,6 @@ class RedSkyServiceTest {
         redSkyService = spyk(RedSkyService("some host"))
     }
 
-    @ExperimentalCoroutinesApi
     @Test
     fun `getProductTitle when data is present in redsky`() = runBlocking {
         val id = 8
@@ -40,7 +37,6 @@ class RedSkyServiceTest {
         assertEquals(redSkyResponse, actualResponse)
     }
 
-    @ExperimentalCoroutinesApi
     @Test
     fun `getProductTitle when data is not present in redsky`() = runBlocking {
         val id = 8

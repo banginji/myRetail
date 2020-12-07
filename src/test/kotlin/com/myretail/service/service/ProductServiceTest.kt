@@ -14,30 +14,29 @@ import com.myretail.service.domain.redsky.RedSkyProductItem
 import com.myretail.service.domain.redsky.RedSkyProductItemDesc
 import com.myretail.service.domain.redsky.RedSkyResponse
 import io.mockk.*
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import io.mockk.impl.annotations.InjectMockKs
+import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class ProductServiceTest {
+    @MockK
     private lateinit var priceService: PriceService
+    @MockK
     private lateinit var redSkyService: RedSkyService
+    @MockK
     private lateinit var productResponseConverter: ProductResponseConverter
+    @MockK
     private lateinit var updateRequestConverter: UpdateRequestConverter
 
+    @InjectMockKs
     private lateinit var productService: ProductService
 
     @BeforeEach
-    fun beforeEach() {
-        priceService = mockk()
-        redSkyService = mockk()
-        productResponseConverter = mockk()
-        updateRequestConverter = mockk()
-        productService = spyk(ProductService(priceService, redSkyService, productResponseConverter, updateRequestConverter))
-    }
+    fun setUp() = MockKAnnotations.init(this)
 
-    @ExperimentalCoroutinesApi
     @Test
     fun `getProductInfo for successful aggregation of data across multiple sources`() = runBlocking {
         val id = 1
@@ -65,7 +64,6 @@ class ProductServiceTest {
         assertEquals(expectedResponse, actualResponse)
     }
 
-    @ExperimentalCoroutinesApi
     @Test
     fun `getProductInfo for successful aggregation from at least one source`() = runBlocking {
         val id = 1
@@ -91,7 +89,6 @@ class ProductServiceTest {
         assertEquals(expectedResponse, actualResponse)
     }
 
-    @ExperimentalCoroutinesApi
     @Test
     fun `getProductInfo for failure to obtain from two sources`() = runBlocking {
         val id = 1

@@ -17,7 +17,6 @@ import org.springframework.web.reactive.function.client.awaitBody
 class RedSkyService(@Value("\${redsky.host:https://redsky.target.com}") private val host: String) {
     private val webClient: WebClient = WebClient.create(host)
 
-    @ExperimentalCoroutinesApi
     suspend fun getProductTitle(id: Int) = flow { emit(invokeRedSkyCall(id)) }
             .retry(3) { e -> (e is Exception).also { if (it) delay(50) } }
             .catch { emit(redSkyError()) }

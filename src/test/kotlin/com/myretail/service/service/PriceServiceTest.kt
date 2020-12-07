@@ -8,8 +8,12 @@ import com.myretail.service.domain.price.ProductPriceResponse
 import com.myretail.service.domain.price.UpdateProductPriceRequest
 import com.myretail.service.persistence.ProductPriceDocument
 import com.myretail.service.repository.ProductPriceRepository
-import com.myretail.service.service.PriceService
-import io.mockk.*
+import io.mockk.MockKAnnotations
+import io.mockk.called
+import io.mockk.every
+import io.mockk.impl.annotations.InjectMockKs
+import io.mockk.impl.annotations.MockK
+import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -17,17 +21,16 @@ import org.junit.jupiter.api.Test
 import reactor.core.publisher.Mono
 
 class PriceServiceTest {
+    @MockK
     private lateinit var productPriceRepository: ProductPriceRepository
+    @MockK
     private lateinit var priceResponseConverter: PriceResponseConverter
 
+    @InjectMockKs
     private lateinit var priceService: PriceService
 
     @BeforeEach
-    fun beforeEach() {
-        productPriceRepository = mockk()
-        priceResponseConverter = mockk()
-        priceService = spyk(PriceService(productPriceRepository, priceResponseConverter))
-    }
+    fun setUp() = MockKAnnotations.init(this)
 
     @Test
     fun `getProductPrice when data is present in data store`() = runBlocking {

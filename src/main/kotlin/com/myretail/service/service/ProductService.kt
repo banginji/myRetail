@@ -14,7 +14,6 @@ class ProductService(
         private val productResponseConverter: ProductResponseConverter,
         private val updateRequestConverter: UpdateRequestConverter
 ) {
-    @ExperimentalCoroutinesApi
     suspend fun getProductInfo(id: Int): ProductResponse = productResponseConverter.convert(priceService.getProductPrice(id) to redSkyService.getProductTitle(id))
 
     suspend fun updateProductPrice(id: Int, updateProductRequest: UpdateProductRequest) = priceService.updateProductPrice(id, updateRequestConverter.convert(updateProductRequest))

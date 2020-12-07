@@ -11,6 +11,7 @@ import com.myretail.service.service.RedSkyService
 import com.ninjasquad.springmockk.MockkBean
 import com.ninjasquad.springmockk.SpykBean
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
@@ -33,6 +34,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
     private lateinit var redSkyService: RedSkyService
 
     private final val baseJsonPath = "$.data.getProductInfo"
+    private final val graphQLEndpoint = "/graphql"
 
     @Test
     fun `get product response when data exists in data store and redsky`(): Unit = runBlocking {
@@ -61,7 +63,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
 
         client
                 .post()
-                .uri("/graphql")
+                .uri(graphQLEndpoint)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -77,6 +79,9 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                 .jsonPath("$baseJsonPath.current_price.currency_code").isEqualTo(currencyCode)
                 .jsonPath("$baseJsonPath.productErrors").isArray
                 .jsonPath("$baseJsonPath.productErrors.length()").isEqualTo(0)
+
+        coVerify(exactly = 1) { productPriceRepository.findById(id) }
+        coVerify(exactly = 1) { redSkyService.invokeRedSkyCall(id) }
     }
 
     @Test
@@ -89,7 +94,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
 
         every { productPriceRepository.findById(id) } returns Mono.just(ProductPriceDocument(id, value, currencyCode))
 
-        coEvery { redSkyService.invokeRedSkyCall(id) } throws Throwable()
+        coEvery { redSkyService.invokeRedSkyCall(id) } throws Exception()
 
         /**
          * {
@@ -100,7 +105,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
             },
             "productErrors": [
                 {
-                    "redSkyError": "could not retrieve title from redsky: (Retries exhausted: 3/3)"
+                    "redSkyError": "could not retrieve title from redsky"
                 }
             ]
         }
@@ -110,7 +115,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
 
         client
                 .post()
-                .uri("/graphql")
+                .uri(graphQLEndpoint)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -126,6 +131,9 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                 .jsonPath("$baseJsonPath.productErrors.length()").isEqualTo(1)
                 .jsonPath("$baseJsonPath.productErrors.[0].error").exists()
                 .jsonPath("$baseJsonPath.productErrors.[0].error").isEqualTo(redSkyErrorMessage)
+
+        coVerify(exactly = 1) { productPriceRepository.findById(id) }
+        coVerify(exactly = 4) { redSkyService.invokeRedSkyCall(id) }
     }
 
     @Test
@@ -154,7 +162,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
 
         client
                 .post()
-                .uri("/graphql")
+                .uri(graphQLEndpoint)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -168,6 +176,9 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                 .jsonPath("$baseJsonPath.productErrors.length()").isEqualTo(1)
                 .jsonPath("$baseJsonPath.productErrors.[0].error").exists()
                 .jsonPath("$baseJsonPath.productErrors.[0].error").isEqualTo(productPriceError)
+
+        coVerify(exactly = 1) { productPriceRepository.findById(id) }
+        coVerify(exactly = 1) { redSkyService.invokeRedSkyCall(id) }
     }
 
     @Test
@@ -179,7 +190,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
 
         every { productPriceRepository.findById(id) } returns Mono.empty()
 
-        coEvery { redSkyService.invokeRedSkyCall(id) } throws Throwable()
+        coEvery { redSkyService.invokeRedSkyCall(id) } throws Exception()
 
         /**
          * {
@@ -188,7 +199,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                     "productPriceError": "price not found in data store"
                 },
                 {
-                    "redSkyError": "could not retrieve title from redsky: (Retries exhausted: 3/3)"
+                    "redSkyError": "could not retrieve title from redsky"
                 }
             ]
         }
@@ -198,7 +209,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
 
         client
                 .post()
-                .uri("/graphql")
+                .uri(graphQLEndpoint)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
@@ -214,5 +225,54 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                 .jsonPath("$baseJsonPath.productErrors.[0].error").isEqualTo(productPriceError)
                 .jsonPath("$baseJsonPath.productErrors.[1].error").exists()
                 .jsonPath("$baseJsonPath.productErrors.[1].error").isEqualTo(redSkyErrorMessage)
+
+        coVerify(exactly = 1) { productPriceRepository.findById(id) }
+        coVerify(exactly = 4) { redSkyService.invokeRedSkyCall(id) }
+    }
+
+    fun `get product response for client requested fields alone`() = runBlocking {
+        val id = 8
+        val value = 15.3
+        val currencyCode = "USD"
+        val title = "item1"
+
+        every { productPriceRepository.findById(id) } returns Mono.just(ProductPriceDocument(id, value, currencyCode))
+
+        coEvery { redSkyService.invokeRedSkyCall(id) } returns RedSkyResponse(RedSkyProduct(RedSkyProductItem(id.toString(), RedSkyProductItemDesc(title))), null)
+
+        /**
+         * {
+            "id": 13860428,
+            "name": "The Big Lebowski (Blu-ray)",
+            "current_price": {
+            "value": 1193.33,
+            "currency_code": "USD"
+            },
+            "productErrors": []
+        }
+         */
+
+        val request = GraphQLRequest(query = "{ getProductInfo(id: 8) { current_price { value } name } }")
+
+        client
+                .post()
+                .uri(graphQLEndpoint)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .exchange()
+                .expectStatus().isOk
+                .expectBody()
+                .jsonPath("$").exists()
+                .jsonPath("$.data").exists()
+                .jsonPath(baseJsonPath).exists()
+                .jsonPath("$baseJsonPath.id").doesNotExist()
+                .jsonPath("$baseJsonPath.name").isEqualTo(title)
+                .jsonPath("$baseJsonPath.current_price").exists()
+                .jsonPath("$baseJsonPath.current_price.value").isEqualTo(value)
+                .jsonPath("$baseJsonPath.current_price.currency_code").doesNotExist()
+                .jsonPath("$baseJsonPath.productErrors").doesNotExist()
+
+        coVerify(exactly = 1) { productPriceRepository.findById(id) }
+        coVerify(exactly = 1) { redSkyService.invokeRedSkyCall(id) }
     }
 }
