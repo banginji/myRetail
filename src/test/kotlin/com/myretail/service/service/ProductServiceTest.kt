@@ -2,13 +2,13 @@ package com.myretail.service.service
 
 import com.myretail.service.converter.ProductResponseConverter
 import com.myretail.service.converter.UpdateRequestConverter
-import com.myretail.service.domain.ProductError
-import com.myretail.service.domain.ProductResponse
-import com.myretail.service.domain.UpdateProductRequest
+import com.myretail.service.domain.product.ProductError
+import com.myretail.service.domain.product.ProductResponse
+import com.myretail.service.domain.product.UpdateProductRequest
 import com.myretail.service.domain.price.CurrentPrice
-import com.myretail.service.domain.price.ProductPrice
-import com.myretail.service.domain.price.ProductPriceResponse
-import com.myretail.service.domain.price.UpdateProductPriceRequest
+import com.myretail.service.domain.price.Price
+import com.myretail.service.domain.price.PriceResponse
+import com.myretail.service.domain.price.UpdatePriceRequest
 import com.myretail.service.domain.redsky.RedSkyProduct
 import com.myretail.service.domain.redsky.RedSkyProductItem
 import com.myretail.service.domain.redsky.RedSkyProductItemDesc
@@ -43,7 +43,7 @@ class ProductServiceTest {
         val value = 1.1
         val currencyCode = "USD"
 
-        val productPriceResponse = ProductPriceResponse(ProductPrice(id, value, currencyCode))
+        val productPriceResponse = PriceResponse(Price(id, value, currencyCode))
 
         coEvery { priceService.getProductPrice(id) } returns productPriceResponse
 
@@ -68,7 +68,7 @@ class ProductServiceTest {
     fun `getProductInfo for successful aggregation from at least one source`() = runBlocking {
         val id = 1
 
-        val priceError = ProductPriceResponse(null, ProductError("price not found in data store"))
+        val priceError = PriceResponse(null, ProductError("price not found in data store"))
 
         coEvery { priceService.getProductPrice(id) } returns priceError
 
@@ -93,7 +93,7 @@ class ProductServiceTest {
     fun `getProductInfo for failure to obtain from two sources`() = runBlocking {
         val id = 1
 
-        val priceResponse = ProductPriceResponse(null, ProductError("price not found in data store"))
+        val priceResponse = PriceResponse(null, ProductError("price not found in data store"))
         coEvery { priceService.getProductPrice(id) } returns priceResponse
 
         val redSkyResponse = RedSkyResponse(null, ProductError("could not retrieve title from redsky"))
@@ -118,9 +118,9 @@ class ProductServiceTest {
         val newValue = 2.2
         val newCurrencyCode = "EUR"
         val updateProductRequest = UpdateProductRequest(CurrentPrice(newValue, newCurrencyCode))
-        val updateProductPriceRequest = UpdateProductPriceRequest(CurrentPrice(newValue, newCurrencyCode))
+        val updateProductPriceRequest = UpdatePriceRequest(CurrentPrice(newValue, newCurrencyCode))
 
-        val productPriceResponse = ProductPriceResponse(productPrice = null, productPriceError = null)
+        val productPriceResponse = PriceResponse(price = null, productPriceError = null)
         coEvery { priceService.updateProductPrice(id, updateProductPriceRequest) } returns productPriceResponse
 
         every { updateRequestConverter.convert(updateProductRequest) } returns updateProductPriceRequest

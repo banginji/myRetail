@@ -1,13 +1,13 @@
 package com.myretail.service.service
 
-import com.myretail.service.converter.PriceResponseConverter
-import com.myretail.service.domain.ProductError
+import com.myretail.service.converter.PriceDocumentResponseConverter
+import com.myretail.service.domain.product.ProductError
 import com.myretail.service.domain.price.CurrentPrice
-import com.myretail.service.domain.price.ProductPrice
-import com.myretail.service.domain.price.ProductPriceResponse
-import com.myretail.service.domain.price.UpdateProductPriceRequest
-import com.myretail.service.persistence.ProductPriceDocument
-import com.myretail.service.repository.ProductPriceRepository
+import com.myretail.service.domain.price.Price
+import com.myretail.service.domain.price.PriceResponse
+import com.myretail.service.domain.price.UpdatePriceRequest
+import com.myretail.service.persistence.PriceDocument
+import com.myretail.service.repository.PriceRepository
 import io.mockk.MockKAnnotations
 import io.mockk.called
 import io.mockk.every
@@ -22,9 +22,9 @@ import reactor.core.publisher.Mono
 
 class PriceServiceTest {
     @MockK
-    private lateinit var productPriceRepository: ProductPriceRepository
+    private lateinit var priceRepository: PriceRepository
     @MockK
-    private lateinit var priceResponseConverter: PriceResponseConverter
+    private lateinit var priceDocumentResponseConverter: PriceDocumentResponseConverter
 
     @InjectMockKs
     private lateinit var priceService: PriceService
@@ -38,16 +38,16 @@ class PriceServiceTest {
         val value = 1.1
         val currencyCode = "USD"
 
-        val productPriceDocument = ProductPriceDocument(id, value, currencyCode)
-        val productProductResponse = ProductPriceResponse(ProductPrice(id, value, currencyCode))
+        val productPriceDocument = PriceDocument(id, value, currencyCode)
+        val productProductResponse = PriceResponse(Price(id, value, currencyCode))
 
-        every { productPriceRepository.findById(id) } returns Mono.just(productPriceDocument)
-        every { priceResponseConverter.convert(productPriceDocument) } returns productProductResponse
+        every { priceRepository.findById(id) } returns Mono.just(productPriceDocument)
+        every { priceDocumentResponseConverter.convert(productPriceDocument) } returns productProductResponse
 
         val actualResponse = priceService.getProductPrice(id)
 
-        verify { productPriceRepository.findById(id) }
-        verify { priceResponseConverter.convert(productPriceDocument) }
+        verify { priceRepository.findById(id) }
+        verify { priceDocumentResponseConverter.convert(productPriceDocument) }
 
         assertEquals(productProductResponse, actualResponse)
     }
@@ -56,14 +56,14 @@ class PriceServiceTest {
     fun `getProductPrice when data is not present in data store`() = runBlocking {
         val id = 1
 
-        val priceErrorResponse = ProductPriceResponse(null, ProductError("price not found in data store"))
+        val priceErrorResponse = PriceResponse(null, ProductError("price not found in data store"))
 
-        every { productPriceRepository.findById(id) } returns Mono.empty()
+        every { priceRepository.findById(id) } returns Mono.empty()
 
         val actualResponse = priceService.getProductPrice(id)
 
-        verify(exactly = 1) { productPriceRepository.findById(id) }
-        verify { priceResponseConverter.convert(any()) wasNot called }
+        verify(exactly = 1) { priceRepository.findById(id) }
+        verify { priceDocumentResponseConverter.convert(any()) wasNot called }
 
         assertEquals(priceErrorResponse, actualResponse)
     }
@@ -74,25 +74,25 @@ class PriceServiceTest {
         val value = 1.1
         val currencyCode = "USD"
 
-        val productPrice = ProductPriceDocument(id, value, currencyCode)
+        val productPrice = PriceDocument(id, value, currencyCode)
 
-        every { productPriceRepository.findById(id) } returns Mono.just(productPrice)
+        every { priceRepository.findById(id) } returns Mono.just(productPrice)
 
         val newValue = 2.2
         val newCurrencyCode = "EUR"
-        val updateProductPriceRequest = UpdateProductPriceRequest(CurrentPrice(newValue, newCurrencyCode))
+        val updateProductPriceRequest = UpdatePriceRequest(CurrentPrice(newValue, newCurrencyCode))
 
-        val updatedProductPrice = ProductPriceDocument(id, newValue, newCurrencyCode)
-        val updatedProductProductResponse = ProductPriceResponse(ProductPrice(id, newValue, newCurrencyCode))
+        val updatedProductPrice = PriceDocument(id, newValue, newCurrencyCode)
+        val updatedProductProductResponse = PriceResponse(Price(id, newValue, newCurrencyCode))
 
-        every { productPriceRepository.save(updatedProductPrice) } returns Mono.just(updatedProductPrice)
-        every { priceResponseConverter.convert(updatedProductPrice) } returns updatedProductProductResponse
+        every { priceRepository.save(updatedProductPrice) } returns Mono.just(updatedProductPrice)
+        every { priceDocumentResponseConverter.convert(updatedProductPrice) } returns updatedProductProductResponse
 
         val actualResponse = priceService.updateProductPrice(id, updateProductPriceRequest)
 
-        verify(exactly = 1) { productPriceRepository.findById(id) }
-        verify(exactly = 1) { productPriceRepository.save(updatedProductPrice) }
-        verify(exactly = 1) { priceResponseConverter.convert(updatedProductPrice) }
+        verify(exactly = 1) { priceRepository.findById(id) }
+        verify(exactly = 1) { priceRepository.save(updatedProductPrice) }
+        verify(exactly = 1) { priceDocumentResponseConverter.convert(updatedProductPrice) }
 
         assertEquals(updatedProductProductResponse, actualResponse)
     }
@@ -101,19 +101,19 @@ class PriceServiceTest {
     fun `updateExistingProductPrice for a non existing product`() = runBlocking {
         val id = 1
 
-        val priceErrorResponse = ProductPriceResponse(null, ProductError("price not found in data store"))
+        val priceErrorResponse = PriceResponse(null, ProductError("price not found in data store"))
 
-        every { productPriceRepository.findById(id) } returns Mono.empty()
+        every { priceRepository.findById(id) } returns Mono.empty()
 
         val newValue = 2.2
         val newCurrencyCode = "EUR"
-        val updateProductPriceRequest = UpdateProductPriceRequest(CurrentPrice(newValue, newCurrencyCode))
+        val updateProductPriceRequest = UpdatePriceRequest(CurrentPrice(newValue, newCurrencyCode))
 
         val actualResponse = priceService.updateProductPrice(id, updateProductPriceRequest)
 
-        verify(exactly = 1) { productPriceRepository.findById(id) }
-        verify { productPriceRepository.save(any()) wasNot called }
-        verify { priceResponseConverter.convert(any()) wasNot called }
+        verify(exactly = 1) { priceRepository.findById(id) }
+        verify { priceRepository.save(any()) wasNot called }
+        verify { priceDocumentResponseConverter.convert(any()) wasNot called }
 
         assertEquals(priceErrorResponse, actualResponse)
     }

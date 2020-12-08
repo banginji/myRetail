@@ -1,6 +1,6 @@
 package com.myretail.service.service
 
-import com.myretail.service.domain.ProductError
+import com.myretail.service.domain.product.ProductError
 import com.myretail.service.domain.redsky.RedSkyProduct
 import com.myretail.service.domain.redsky.RedSkyProductItem
 import com.myretail.service.domain.redsky.RedSkyProductItemDesc

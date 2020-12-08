@@ -5,8 +5,8 @@ import com.myretail.service.domain.redsky.RedSkyProduct
 import com.myretail.service.domain.redsky.RedSkyProductItem
 import com.myretail.service.domain.redsky.RedSkyProductItemDesc
 import com.myretail.service.domain.redsky.RedSkyResponse
-import com.myretail.service.persistence.ProductPriceDocument
-import com.myretail.service.repository.ProductPriceRepository
+import com.myretail.service.persistence.PriceDocument
+import com.myretail.service.repository.PriceRepository
 import com.myretail.service.service.RedSkyService
 import com.ninjasquad.springmockk.MockkBean
 import com.ninjasquad.springmockk.SpykBean
@@ -28,7 +28,7 @@ import reactor.core.publisher.Mono
 @AutoConfigureWebTestClient
 class ProductIT(@Autowired private val client : WebTestClient) {
     @MockkBean
-    private lateinit var productPriceRepository: ProductPriceRepository
+    private lateinit var priceRepository: PriceRepository
 
     @SpykBean
     private lateinit var redSkyService: RedSkyService
@@ -43,7 +43,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
         val currencyCode = "USD"
         val title = "item1"
 
-        every { productPriceRepository.findById(id) } returns Mono.just(ProductPriceDocument(id, value, currencyCode))
+        every { priceRepository.findById(id) } returns Mono.just(PriceDocument(id, value, currencyCode))
 
         coEvery { redSkyService.invokeRedSkyCall(id) } returns RedSkyResponse(RedSkyProduct(RedSkyProductItem(id.toString(), RedSkyProductItemDesc(title))), null)
 
@@ -80,7 +80,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                 .jsonPath("$baseJsonPath.productErrors").isArray
                 .jsonPath("$baseJsonPath.productErrors.length()").isEqualTo(0)
 
-        coVerify(exactly = 1) { productPriceRepository.findById(id) }
+        coVerify(exactly = 1) { priceRepository.findById(id) }
         coVerify(exactly = 1) { redSkyService.invokeRedSkyCall(id) }
     }
 
@@ -92,7 +92,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
 
         val redSkyErrorMessage = "could not retrieve title from redsky"
 
-        every { productPriceRepository.findById(id) } returns Mono.just(ProductPriceDocument(id, value, currencyCode))
+        every { priceRepository.findById(id) } returns Mono.just(PriceDocument(id, value, currencyCode))
 
         coEvery { redSkyService.invokeRedSkyCall(id) } throws Exception()
 
@@ -132,7 +132,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                 .jsonPath("$baseJsonPath.productErrors.[0].error").exists()
                 .jsonPath("$baseJsonPath.productErrors.[0].error").isEqualTo(redSkyErrorMessage)
 
-        coVerify(exactly = 1) { productPriceRepository.findById(id) }
+        coVerify(exactly = 1) { priceRepository.findById(id) }
         coVerify(exactly = 4) { redSkyService.invokeRedSkyCall(id) }
     }
 
@@ -142,7 +142,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
         val title = "item1"
         val productPriceError = "price not found in data store"
 
-        every { productPriceRepository.findById(id) } returns Mono.empty()
+        every { priceRepository.findById(id) } returns Mono.empty()
 
         coEvery { redSkyService.invokeRedSkyCall(id) } returns RedSkyResponse(RedSkyProduct(RedSkyProductItem(id.toString(), RedSkyProductItemDesc(title))), null)
 
@@ -177,7 +177,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                 .jsonPath("$baseJsonPath.productErrors.[0].error").exists()
                 .jsonPath("$baseJsonPath.productErrors.[0].error").isEqualTo(productPriceError)
 
-        coVerify(exactly = 1) { productPriceRepository.findById(id) }
+        coVerify(exactly = 1) { priceRepository.findById(id) }
         coVerify(exactly = 1) { redSkyService.invokeRedSkyCall(id) }
     }
 
@@ -188,7 +188,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
         val redSkyErrorMessage = "could not retrieve title from redsky"
         val productPriceError = "price not found in data store"
 
-        every { productPriceRepository.findById(id) } returns Mono.empty()
+        every { priceRepository.findById(id) } returns Mono.empty()
 
         coEvery { redSkyService.invokeRedSkyCall(id) } throws Exception()
 
@@ -226,7 +226,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                 .jsonPath("$baseJsonPath.productErrors.[1].error").exists()
                 .jsonPath("$baseJsonPath.productErrors.[1].error").isEqualTo(redSkyErrorMessage)
 
-        coVerify(exactly = 1) { productPriceRepository.findById(id) }
+        coVerify(exactly = 1) { priceRepository.findById(id) }
         coVerify(exactly = 4) { redSkyService.invokeRedSkyCall(id) }
     }
 
@@ -236,7 +236,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
         val currencyCode = "USD"
         val title = "item1"
 
-        every { productPriceRepository.findById(id) } returns Mono.just(ProductPriceDocument(id, value, currencyCode))
+        every { priceRepository.findById(id) } returns Mono.just(PriceDocument(id, value, currencyCode))
 
         coEvery { redSkyService.invokeRedSkyCall(id) } returns RedSkyResponse(RedSkyProduct(RedSkyProductItem(id.toString(), RedSkyProductItemDesc(title))), null)
 
@@ -272,7 +272,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                 .jsonPath("$baseJsonPath.current_price.currency_code").doesNotExist()
                 .jsonPath("$baseJsonPath.productErrors").doesNotExist()
 
-        coVerify(exactly = 1) { productPriceRepository.findById(id) }
+        coVerify(exactly = 1) { priceRepository.findById(id) }
         coVerify(exactly = 1) { redSkyService.invokeRedSkyCall(id) }
     }
 }

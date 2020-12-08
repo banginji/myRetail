@@ -1,43 +1,43 @@
 package com.myretail.service.service
 
-import com.myretail.service.converter.PriceResponseConverter
-import com.myretail.service.domain.ProductError
+import com.myretail.service.converter.PriceDocumentResponseConverter
+import com.myretail.service.domain.product.ProductError
 import com.myretail.service.domain.price.CurrentPrice
-import com.myretail.service.domain.price.ProductPriceResponse
-import com.myretail.service.domain.price.UpdateProductPriceRequest
-import com.myretail.service.persistence.ProductPriceDocument
-import com.myretail.service.repository.ProductPriceRepository
+import com.myretail.service.domain.price.PriceResponse
+import com.myretail.service.domain.price.UpdatePriceRequest
+import com.myretail.service.persistence.PriceDocument
+import com.myretail.service.repository.PriceRepository
 import kotlinx.coroutines.reactive.awaitFirstOrElse
 import org.springframework.stereotype.Service
 
 @Service
 class PriceService(
-        private val productPriceRepository: ProductPriceRepository,
-        private val priceResponseConverter: PriceResponseConverter
+        private val priceRepository: PriceRepository,
+        private val priceDocumentResponseConverter: PriceDocumentResponseConverter
 ) {
-    suspend fun getProductPrice(id: Int): ProductPriceResponse = findProductPriceById(id).map { priceResponseConverter.convert(it) }.awaitFirstOrElse { priceNotFound() }
+    suspend fun getProductPrice(id: Int): PriceResponse = findProductPriceById(id).map { priceDocumentResponseConverter.convert(it) }.awaitFirstOrElse { priceNotFound() }
 
     suspend fun updateProductPrice(
-            id: Int, updateProductPriceRequest: UpdateProductPriceRequest
-    ) : ProductPriceResponse = findProductPriceById(id).flatMap { updateExistingProductPrice(it, updateProductPriceRequest.current_price) }.awaitFirstOrElse { priceNotFound() }
+            id: Int, updatePriceRequest: UpdatePriceRequest
+    ) : PriceResponse = findProductPriceById(id).flatMap { updateExistingProductPrice(it, updatePriceRequest.current_price) }.awaitFirstOrElse { priceNotFound() }
 
-    fun findProductPriceById(id: Int) = productPriceRepository.findById(id)
+    fun findProductPriceById(id: Int) = priceRepository.findById(id)
 
     private fun updateExistingProductPrice(
-            productPrice: ProductPriceDocument,
+            price: PriceDocument,
             currentPrice: CurrentPrice
-    ) = saveProductPrice(productPrice, currentPrice).map { priceResponseConverter.convert(it) }
+    ) = saveProductPrice(price, currentPrice).map { priceDocumentResponseConverter.convert(it) }
 
     private fun saveProductPrice(
-            productPrice: ProductPriceDocument,
+            price: PriceDocument,
             currentPrice: CurrentPrice
-    ) = productPriceRepository.save(
-            ProductPriceDocument(
-                    productPrice.id,
-                    currentPrice.value ?: productPrice.value,
-                    currentPrice.currency_code ?: productPrice.currency_code
+    ) = priceRepository.save(
+            PriceDocument(
+                    price.id,
+                    currentPrice.value ?: price.value,
+                    currentPrice.currency_code ?: price.currency_code
             )
     )
 
-    private fun priceNotFound() = ProductPriceResponse(null, ProductError("price not found in data store"))
+    private fun priceNotFound() = PriceResponse(null, ProductError("price not found in data store"))
 }

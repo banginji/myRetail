@@ -1,11 +1,11 @@
 package com.myretail.service.converter
 
-import com.myretail.service.domain.UpdateProductRequest
-import com.myretail.service.domain.price.UpdateProductPriceRequest
+import com.myretail.service.domain.product.UpdateProductRequest
+import com.myretail.service.domain.price.UpdatePriceRequest
 import org.springframework.core.convert.converter.Converter
 import org.springframework.stereotype.Component
 
 @Component
-class UpdateRequestConverter : Converter<UpdateProductRequest, UpdateProductPriceRequest> {
-    override fun convert(source: UpdateProductRequest): UpdateProductPriceRequest = UpdateProductPriceRequest(source.current_price)
+class UpdateRequestConverter : Converter<UpdateProductRequest, UpdatePriceRequest> {
+    override fun convert(source: UpdateProductRequest): UpdatePriceRequest = UpdatePriceRequest(source.current_price)
 }
