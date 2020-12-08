@@ -13,7 +13,7 @@ class ProductResponse(
         @GraphQLIgnore private val redSkyResponseConverter: RedSkyResponseConverter,
         @GraphQLIgnore private val priceResponseConverter: PriceResponseConverter,
 ) {
-    suspend fun name(): ProductName? = redSkyResponseConverter.convert(redSkyService.getProductTitle(id))
+    suspend fun name(): ProductName = redSkyResponseConverter.convert(redSkyService.getProductTitle(id))
 
-    suspend fun price(): ProductPrice? = priceResponseConverter.convert(priceService.getProductPrice(id))
+    suspend fun price(): ProductPrice = priceResponseConverter.convert(priceService.getProductPrice(id))
 }

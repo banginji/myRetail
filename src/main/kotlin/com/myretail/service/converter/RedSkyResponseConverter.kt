@@ -7,5 +7,5 @@ import org.springframework.stereotype.Component
 
 @Component
 class RedSkyResponseConverter: Converter<RedSkyResponse, ProductName> {
-    override fun convert(source: RedSkyResponse): ProductName? = ProductName(name = source.product?.item?.product_description?.title, error = source.redSkyError?.error)
+    override fun convert(source: RedSkyResponse): ProductName = ProductName(name = source.product?.item?.product_description?.title, error = source.redSkyError?.error)
 }
