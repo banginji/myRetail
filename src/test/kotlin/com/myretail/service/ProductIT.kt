@@ -10,6 +10,7 @@ import com.myretail.service.repository.PriceRepository
 import com.myretail.service.service.RedSkyService
 import com.ninjasquad.springmockk.MockkBean
 import com.ninjasquad.springmockk.SpykBean
+import io.mockk.called
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -48,18 +49,29 @@ class ProductIT(@Autowired private val client : WebTestClient) {
         coEvery { redSkyService.invokeRedSkyCall(id) } returns RedSkyResponse(RedSkyProduct(RedSkyProductItem(id.toString(), RedSkyProductItemDesc(title))), null)
 
         /**
+         *
          * {
-            "id": 13860428,
-            "name": "The Big Lebowski (Blu-ray)",
-            "current_price": {
-                "value": 1193.33,
-                "currency_code": "USD"
-            },
-            "productErrors": []
+            "data": {
+                "getProductInfo": {
+                    "id": 13860428,
+                    "price": {
+                        "currentPrice": {
+                            "value": 1193.33,
+                            "currency_code": "USD"
+                        },
+                        "error": null
+                    },
+                    "name": {
+                        "name": "The Big Lebowski (Blu-ray)",
+                        "error": null
+                    }
+                }
+            }
         }
+         *
          */
 
-        val request = GraphQLRequest(query = "{ getProductInfo(id: 8) { current_price { value, currency_code } name id productErrors { error } } }")
+        val request = GraphQLRequest(query = "{ getProductInfo(id: 8) { price { currentPrice { value, currency_code } error } name { name error } id } }")
 
         client
                 .post()
@@ -73,12 +85,14 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                 .jsonPath("$.data").exists()
                 .jsonPath(baseJsonPath).exists()
                 .jsonPath("$baseJsonPath.id").isEqualTo(id)
-                .jsonPath("$baseJsonPath.name").isEqualTo(title)
-                .jsonPath("$baseJsonPath.current_price").exists()
-                .jsonPath("$baseJsonPath.current_price.value").isEqualTo(value)
-                .jsonPath("$baseJsonPath.current_price.currency_code").isEqualTo(currencyCode)
-                .jsonPath("$baseJsonPath.productErrors").isArray
-                .jsonPath("$baseJsonPath.productErrors.length()").isEqualTo(0)
+                .jsonPath("$baseJsonPath.name").exists()
+                .jsonPath("$baseJsonPath.name.name").isEqualTo(title)
+                .jsonPath("$baseJsonPath.name.error").doesNotExist()
+                .jsonPath("$baseJsonPath.price").exists()
+                .jsonPath("$baseJsonPath.price.currentPrice").exists()
+                .jsonPath("$baseJsonPath.price.currentPrice.value").isEqualTo(value)
+                .jsonPath("$baseJsonPath.price.currentPrice.currency_code").isEqualTo(currencyCode)
+                .jsonPath("$baseJsonPath.price.error").doesNotExist()
 
         coVerify(exactly = 1) { priceRepository.findById(id) }
         coVerify(exactly = 1) { redSkyService.invokeRedSkyCall(id) }
@@ -97,21 +111,29 @@ class ProductIT(@Autowired private val client : WebTestClient) {
         coEvery { redSkyService.invokeRedSkyCall(id) } throws Exception()
 
         /**
+         *
          * {
-            "id": 234,
-            "current_price": {
-                "value": 74.24,
-                "currency_code": "USD"
-            },
-            "productErrors": [
-                {
-                    "redSkyError": "could not retrieve title from redsky"
+            "data": {
+                "getProductInfo": {
+                    "id": 13860428,
+                    "price": {
+                        "currentPrice": {
+                            "value": 1193.33,
+                            "currency_code": "USD"
+                        },
+                        "error": null
+                    },
+                    "name": {
+                        "name": null,
+                        "error": "could not retrieve title from redsky"
+                    }
                 }
-            ]
+            }
         }
+         *
          */
 
-        val request = GraphQLRequest(query = "{ getProductInfo(id: 8) { current_price { value, currency_code } name id productErrors { error } } }")
+        val request = GraphQLRequest(query = "{ getProductInfo(id: 8) { price { currentPrice { value, currency_code } error } name { name error } id } }")
 
         client
                 .post()
@@ -123,14 +145,13 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                 .expectBody()
                 .jsonPath(baseJsonPath).exists()
                 .jsonPath("$baseJsonPath.id").isEqualTo(id)
-                .jsonPath("$baseJsonPath.name").doesNotExist()
-                .jsonPath("$baseJsonPath.current_price").exists()
-                .jsonPath("$baseJsonPath.current_price.value").isEqualTo(value)
-                .jsonPath("$baseJsonPath.current_price.currency_code").isEqualTo(currencyCode)
-                .jsonPath("$baseJsonPath.productErrors").isArray
-                .jsonPath("$baseJsonPath.productErrors.length()").isEqualTo(1)
-                .jsonPath("$baseJsonPath.productErrors.[0].error").exists()
-                .jsonPath("$baseJsonPath.productErrors.[0].error").isEqualTo(redSkyErrorMessage)
+                .jsonPath("$baseJsonPath.price").exists()
+                .jsonPath("$baseJsonPath.price.currentPrice").exists()
+                .jsonPath("$baseJsonPath.price.currentPrice.value").isEqualTo(value)
+                .jsonPath("$baseJsonPath.price.currentPrice.currency_code").isEqualTo(currencyCode)
+                .jsonPath("$baseJsonPath.name").exists()
+                .jsonPath("$baseJsonPath.name.name").doesNotExist()
+                .jsonPath("$baseJsonPath.name.error").isEqualTo(redSkyErrorMessage)
 
         coVerify(exactly = 1) { priceRepository.findById(id) }
         coVerify(exactly = 4) { redSkyService.invokeRedSkyCall(id) }
@@ -147,18 +168,26 @@ class ProductIT(@Autowired private val client : WebTestClient) {
         coEvery { redSkyService.invokeRedSkyCall(id) } returns RedSkyResponse(RedSkyProduct(RedSkyProductItem(id.toString(), RedSkyProductItemDesc(title))), null)
 
         /**
+         *
          * {
-            "id": 13860427,
-            "name": "Conan the Barbarian (dvd_video)",
-            "productErrors": [
-                {
-                    "productPriceError": "price not found in data store"
+            "data": {
+                "getProductInfo": {
+                    "id": 13860428,
+                    "price": {
+                        "currentPrice": null
+                        "error": "price not found in data store"
+                    },
+                    "name": {
+                        "name": "The Big Lebowski (Blu-ray)",
+                        "error": null
+                    }
                 }
-            ]
+            }
         }
+         *
          */
 
-        val request = GraphQLRequest(query = "{ getProductInfo(id: 8) { current_price { value, currency_code } name id productErrors { error } } }")
+        val request = GraphQLRequest(query = "{ getProductInfo(id: 8) { price { currentPrice { value, currency_code } error } name { name error } id } }")
 
         client
                 .post()
@@ -170,12 +199,12 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                 .expectBody()
                 .jsonPath(baseJsonPath).exists()
                 .jsonPath("$baseJsonPath.id").isEqualTo(id)
-                .jsonPath("$baseJsonPath.name").isEqualTo(title)
-                .jsonPath("$baseJsonPath.current_price").doesNotExist()
-                .jsonPath("$baseJsonPath.productErrors").isArray
-                .jsonPath("$baseJsonPath.productErrors.length()").isEqualTo(1)
-                .jsonPath("$baseJsonPath.productErrors.[0].error").exists()
-                .jsonPath("$baseJsonPath.productErrors.[0].error").isEqualTo(productPriceError)
+                .jsonPath("$baseJsonPath.price").exists()
+                .jsonPath("$baseJsonPath.price.currentPrice").doesNotExist()
+                .jsonPath("$baseJsonPath.price.error").isEqualTo(productPriceError)
+                .jsonPath("$baseJsonPath.name").exists()
+                .jsonPath("$baseJsonPath.name.name").isEqualTo(title)
+                .jsonPath("$baseJsonPath.name.error").doesNotExist()
 
         coVerify(exactly = 1) { priceRepository.findById(id) }
         coVerify(exactly = 1) { redSkyService.invokeRedSkyCall(id) }
@@ -193,19 +222,26 @@ class ProductIT(@Autowired private val client : WebTestClient) {
         coEvery { redSkyService.invokeRedSkyCall(id) } throws Exception()
 
         /**
+         *
          * {
-            "productErrors": [
-                {
-                    "productPriceError": "price not found in data store"
-                },
-                {
-                    "redSkyError": "could not retrieve title from redsky"
+            "data": {
+                "getProductInfo": {
+                    "id": 13860428,
+                    "price": {
+                        "currentPrice": null,
+                        "error": "price not found in data store"
+                    },
+                    "name": {
+                        "name": null,
+                        "error": "could not retrieve title from redsky"
+                    }
                 }
-            ]
+            }
         }
+         *
          */
 
-        val request = GraphQLRequest(query = "{ getProductInfo(id: 8) { current_price { value, currency_code } name id productErrors { error } } }")
+        val request = GraphQLRequest(query = "{ getProductInfo(id: 8) { price { currentPrice { value, currency_code } error } name { name error } id } }")
 
         client
                 .post()
@@ -216,20 +252,19 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                 .expectStatus().isOk
                 .expectBody()
                 .jsonPath(baseJsonPath).exists()
-                .jsonPath("$baseJsonPath.id").doesNotExist()
-                .jsonPath("$baseJsonPath.name").doesNotExist()
-                .jsonPath("$baseJsonPath.current_price").doesNotExist()
-                .jsonPath("$baseJsonPath.productErrors").isArray
-                .jsonPath("$baseJsonPath.productErrors.length()").isEqualTo(2)
-                .jsonPath("$baseJsonPath.productErrors.[0].error").exists()
-                .jsonPath("$baseJsonPath.productErrors.[0].error").isEqualTo(productPriceError)
-                .jsonPath("$baseJsonPath.productErrors.[1].error").exists()
-                .jsonPath("$baseJsonPath.productErrors.[1].error").isEqualTo(redSkyErrorMessage)
+                .jsonPath("$baseJsonPath.id").isEqualTo(id)
+                .jsonPath("$baseJsonPath.price").exists()
+                .jsonPath("$baseJsonPath.price.currentPrice").doesNotExist()
+                .jsonPath("$baseJsonPath.price.error").isEqualTo(productPriceError)
+                .jsonPath("$baseJsonPath.name").exists()
+                .jsonPath("$baseJsonPath.name.name").doesNotExist()
+                .jsonPath("$baseJsonPath.name.error").isEqualTo(redSkyErrorMessage)
 
         coVerify(exactly = 1) { priceRepository.findById(id) }
         coVerify(exactly = 4) { redSkyService.invokeRedSkyCall(id) }
     }
 
+    @Test
     fun `get product response for client requested fields alone`() = runBlocking {
         val id = 8
         val value = 15.3
@@ -241,18 +276,26 @@ class ProductIT(@Autowired private val client : WebTestClient) {
         coEvery { redSkyService.invokeRedSkyCall(id) } returns RedSkyResponse(RedSkyProduct(RedSkyProductItem(id.toString(), RedSkyProductItemDesc(title))), null)
 
         /**
+         *
          * {
-            "id": 13860428,
-            "name": "The Big Lebowski (Blu-ray)",
-            "current_price": {
-            "value": 1193.33,
-            "currency_code": "USD"
-            },
-            "productErrors": []
+            "data": {
+                "getProductInfo": {
+                    "id": 13860428,
+                    "price": {
+                        "currentPrice": {
+                            "value": 1193.33
+                        }
+                    },
+                    "name": {
+                        "name": "The Big Lebowski (Blu-ray)"
+                    }
+                }
+            }
         }
+         *
          */
 
-        val request = GraphQLRequest(query = "{ getProductInfo(id: 8) { current_price { value } name } }")
+        val request = GraphQLRequest(query = "{ getProductInfo(id: 8) { price { currentPrice { value } } name { name } } }")
 
         client
                 .post()
@@ -266,13 +309,66 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                 .jsonPath("$.data").exists()
                 .jsonPath(baseJsonPath).exists()
                 .jsonPath("$baseJsonPath.id").doesNotExist()
-                .jsonPath("$baseJsonPath.name").isEqualTo(title)
-                .jsonPath("$baseJsonPath.current_price").exists()
-                .jsonPath("$baseJsonPath.current_price.value").isEqualTo(value)
-                .jsonPath("$baseJsonPath.current_price.currency_code").doesNotExist()
-                .jsonPath("$baseJsonPath.productErrors").doesNotExist()
+                .jsonPath("$baseJsonPath.name").exists()
+                .jsonPath("$baseJsonPath.name.name").isEqualTo(title)
+                .jsonPath("$baseJsonPath.name.error").doesNotExist()
+                .jsonPath("$baseJsonPath.price").exists()
+                .jsonPath("$baseJsonPath.price.currentPrice").exists()
+                .jsonPath("$baseJsonPath.price.currentPrice.value").isEqualTo(value)
+                .jsonPath("$baseJsonPath.price.currentPrice.currency_code").doesNotExist()
+                .jsonPath("$baseJsonPath.price.error").doesNotExist()
 
         coVerify(exactly = 1) { priceRepository.findById(id) }
         coVerify(exactly = 1) { redSkyService.invokeRedSkyCall(id) }
+    }
+
+    @Test
+    fun `get product response does not make a call to redsky when name is not requested by client`() = runBlocking {
+        val id = 8
+        val value = 15.3
+        val currencyCode = "USD"
+        val title = "item1"
+
+        every { priceRepository.findById(id) } returns Mono.just(PriceDocument(id, value, currencyCode))
+
+        coEvery { redSkyService.invokeRedSkyCall(id) } returns RedSkyResponse(RedSkyProduct(RedSkyProductItem(id.toString(), RedSkyProductItemDesc(title))), null)
+
+        /**
+         *
+         * {
+            "data": {
+                "getProductInfo": {
+                    "id": 13860428,
+                    "price": {
+                        "currentPrice": {
+                            "value": 1193.33
+                        }
+                    }
+                }
+            }
+        }
+         *
+         */
+
+        val request = GraphQLRequest(query = "{ getProductInfo(id: 8) { price { currentPrice { value } } } }")
+
+        client
+                .post()
+                .uri(graphQLEndpoint)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .exchange()
+                .expectStatus().isOk
+                .expectBody()
+                .jsonPath("$").exists()
+                .jsonPath("$.data").exists()
+                .jsonPath(baseJsonPath).exists()
+                .jsonPath("$baseJsonPath.name").doesNotExist()
+                .jsonPath("$baseJsonPath.price").exists()
+                .jsonPath("$baseJsonPath.price.currentPrice").exists()
+                .jsonPath("$baseJsonPath.price.currentPrice.value").isEqualTo(value)
+
+        coVerify(exactly = 1) { priceRepository.findById(id) }
+        coVerify { redSkyService.invokeRedSkyCall(id) wasNot called }
     }
 }
