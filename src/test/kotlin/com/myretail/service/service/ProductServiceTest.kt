@@ -3,10 +3,14 @@ package com.myretail.service.service
 import com.myretail.service.converter.PriceResponseConverter
 import com.myretail.service.converter.RedSkyResponseConverter
 import com.myretail.service.converter.UpdateRequestConverter
+import com.myretail.service.converter.UpdateResponseConverter
 import com.myretail.service.domain.price.CurrentPrice
 import com.myretail.service.domain.price.PriceResponse
 import com.myretail.service.domain.price.UpdatePriceRequest
+import com.myretail.service.domain.product.ProductCurrentPrice
+import com.myretail.service.domain.product.ProductPrice
 import com.myretail.service.domain.product.UpdateProductRequest
+import com.myretail.service.domain.product.UpdateProductResponse
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.every
@@ -28,6 +32,8 @@ class ProductServiceTest {
     private lateinit var redSkyResponseConverter: RedSkyResponseConverter
     @MockK
     private lateinit var updateRequestConverter: UpdateRequestConverter
+    @MockK
+    private lateinit var updateResponseConverter: UpdateResponseConverter
 
     @InjectMockKs
     private lateinit var productService: ProductService
@@ -41,16 +47,19 @@ class ProductServiceTest {
 
         val newValue = 2.2
         val newCurrencyCode = "EUR"
-        val updateProductRequest = UpdateProductRequest(CurrentPrice(newValue, newCurrencyCode))
+        val updateProductRequest = UpdateProductRequest(ProductCurrentPrice(newValue, newCurrencyCode))
         val updatePriceRequest = UpdatePriceRequest(CurrentPrice(newValue, newCurrencyCode))
+        val updateProductResponse = UpdateProductResponse(price = ProductPrice(currentPrice = ProductCurrentPrice(value = newValue, currency_code = newCurrencyCode), error = null))
 
-        val productPriceResponse = PriceResponse(price = null, productPriceError = null)
-        coEvery { priceService.updateProductPrice(id, updatePriceRequest) } returns productPriceResponse
+        val priceResponse = PriceResponse(price = null, productPriceError = null)
+        coEvery { priceService.updateProductPrice(id, updatePriceRequest) } returns priceResponse
 
         every { updateRequestConverter.convert(updateProductRequest) } returns updatePriceRequest
 
+        every { updateResponseConverter.convert(priceResponse) } returns updateProductResponse
+
         val actualResponse = productService.updateProductPrice(id, updateProductRequest)
 
-        assertEquals(productPriceResponse, actualResponse)
+        assertEquals(updateProductResponse, actualResponse)
     }
 }

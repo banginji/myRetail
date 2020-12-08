@@ -19,7 +19,7 @@ class PriceService(
 
     suspend fun updateProductPrice(
             id: Int, updatePriceRequest: UpdatePriceRequest
-    ) : PriceResponse = findProductPriceById(id).flatMap { updateExistingProductPrice(it, updatePriceRequest.current_price) }.awaitFirstOrElse { priceNotFound() }
+    ) : PriceResponse = findProductPriceById(id).flatMap { updateExistingProductPrice(it, updatePriceRequest.currentPrice) }.awaitFirstOrElse { priceNotFound() }
 
     fun findProductPriceById(id: Int) = priceRepository.findById(id)
 

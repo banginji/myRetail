@@ -2,6 +2,7 @@ package com.myretail.service.converter
 
 import com.myretail.service.domain.price.CurrentPrice
 import com.myretail.service.domain.price.UpdatePriceRequest
+import com.myretail.service.domain.product.ProductCurrentPrice
 import com.myretail.service.domain.product.UpdateProductRequest
 import io.mockk.spyk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -21,9 +22,9 @@ class UpdateRequestConverterTest {
         val value = 15.3
         val currencyCode = "USD"
 
-        val updateProductRequest = UpdateProductRequest(current_price = CurrentPrice(value = value, currency_code = currencyCode))
+        val updateProductRequest = UpdateProductRequest(currentPrice = ProductCurrentPrice(value = value, currency_code = currencyCode))
 
-        val expectedResponse = UpdatePriceRequest(current_price = CurrentPrice(value = value, currency_code = currencyCode))
+        val expectedResponse = UpdatePriceRequest(currentPrice = CurrentPrice(value = value, currency_code = currencyCode))
 
         val actualResponse = updateRequestConverter.convert(updateProductRequest)
 
