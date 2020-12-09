@@ -1,0 +1,5 @@
+logging:
+  level:
+    org.springframework: DEBUG
+graphql:
+  packages: com.myretail.service.domain

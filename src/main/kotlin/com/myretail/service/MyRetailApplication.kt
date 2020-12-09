@@ -1,6 +1,7 @@
 package com.myretail.service
 
-import com.myretail.service.config.beans
+import com.myretail.service.initializer.graphQlBeans
+import com.myretail.service.initializer.loadData
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
@@ -8,5 +9,5 @@ import org.springframework.boot.runApplication
 class MyRetailApplication
 
 fun main(args: Array<String>) {
-    runApplication<MyRetailApplication>(*args) { addInitializers(beans()) }
+    runApplication<MyRetailApplication>(*args) { addInitializers(loadData(), graphQlBeans()) }
 }
