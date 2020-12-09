@@ -10,10 +10,8 @@ import com.myretail.service.repository.PriceRepository
 import com.myretail.service.service.RedSkyService
 import com.ninjasquad.springmockk.MockkBean
 import com.ninjasquad.springmockk.SpykBean
-import io.mockk.called
-import io.mockk.coEvery
+import io.mockk.*
 import io.mockk.coVerify
-import io.mockk.every
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -34,7 +32,8 @@ class ProductIT(@Autowired private val client : WebTestClient) {
     @SpykBean
     private lateinit var redSkyService: RedSkyService
 
-    private final val baseJsonPath = "$.data.getProductInfo"
+    private final val baseGetJsonPath = "$.data.getProductInfo"
+    private final val baseUpdateJsonPath = "$.data.updateProductInfo"
     private final val graphQLEndpoint = "/graphql"
 
     @Test
@@ -83,18 +82,18 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                 .expectBody()
                 .jsonPath("$").exists()
                 .jsonPath("$.data").exists()
-                .jsonPath(baseJsonPath).exists()
-                .jsonPath("$baseJsonPath.id").isEqualTo(id)
-                .jsonPath("$baseJsonPath.name").exists()
-                .jsonPath("$baseJsonPath.name.name").isEqualTo(title)
-                .jsonPath("$baseJsonPath.name.error").doesNotExist()
-                .jsonPath("$baseJsonPath.price").exists()
-                .jsonPath("$baseJsonPath.price.currentPrice").exists()
-                .jsonPath("$baseJsonPath.price.currentPrice.value").isEqualTo(value)
-                .jsonPath("$baseJsonPath.price.currentPrice.currencyCode").isEqualTo(currencyCode)
-                .jsonPath("$baseJsonPath.price.error").doesNotExist()
+                .jsonPath(baseGetJsonPath).exists()
+                .jsonPath("$baseGetJsonPath.id").isEqualTo(id)
+                .jsonPath("$baseGetJsonPath.name").exists()
+                .jsonPath("$baseGetJsonPath.name.name").isEqualTo(title)
+                .jsonPath("$baseGetJsonPath.name.error").doesNotExist()
+                .jsonPath("$baseGetJsonPath.price").exists()
+                .jsonPath("$baseGetJsonPath.price.currentPrice").exists()
+                .jsonPath("$baseGetJsonPath.price.currentPrice.value").isEqualTo(value)
+                .jsonPath("$baseGetJsonPath.price.currentPrice.currencyCode").isEqualTo(currencyCode)
+                .jsonPath("$baseGetJsonPath.price.error").doesNotExist()
 
-        coVerify(exactly = 1) { priceRepository.findById(id) }
+        verify(exactly = 1) { priceRepository.findById(id) }
         coVerify(exactly = 1) { redSkyService.invokeRedSkyCall(id) }
     }
 
@@ -143,17 +142,17 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                 .exchange()
                 .expectStatus().isOk
                 .expectBody()
-                .jsonPath(baseJsonPath).exists()
-                .jsonPath("$baseJsonPath.id").isEqualTo(id)
-                .jsonPath("$baseJsonPath.price").exists()
-                .jsonPath("$baseJsonPath.price.currentPrice").exists()
-                .jsonPath("$baseJsonPath.price.currentPrice.value").isEqualTo(value)
-                .jsonPath("$baseJsonPath.price.currentPrice.currencyCode").isEqualTo(currencyCode)
-                .jsonPath("$baseJsonPath.name").exists()
-                .jsonPath("$baseJsonPath.name.name").doesNotExist()
-                .jsonPath("$baseJsonPath.name.error").isEqualTo(redSkyErrorMessage)
+                .jsonPath(baseGetJsonPath).exists()
+                .jsonPath("$baseGetJsonPath.id").isEqualTo(id)
+                .jsonPath("$baseGetJsonPath.price").exists()
+                .jsonPath("$baseGetJsonPath.price.currentPrice").exists()
+                .jsonPath("$baseGetJsonPath.price.currentPrice.value").isEqualTo(value)
+                .jsonPath("$baseGetJsonPath.price.currentPrice.currencyCode").isEqualTo(currencyCode)
+                .jsonPath("$baseGetJsonPath.name").exists()
+                .jsonPath("$baseGetJsonPath.name.name").doesNotExist()
+                .jsonPath("$baseGetJsonPath.name.error").isEqualTo(redSkyErrorMessage)
 
-        coVerify(exactly = 1) { priceRepository.findById(id) }
+        verify(exactly = 1) { priceRepository.findById(id) }
         coVerify(exactly = 4) { redSkyService.invokeRedSkyCall(id) }
     }
 
@@ -197,16 +196,16 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                 .exchange()
                 .expectStatus().isOk
                 .expectBody()
-                .jsonPath(baseJsonPath).exists()
-                .jsonPath("$baseJsonPath.id").isEqualTo(id)
-                .jsonPath("$baseJsonPath.price").exists()
-                .jsonPath("$baseJsonPath.price.currentPrice").doesNotExist()
-                .jsonPath("$baseJsonPath.price.error").isEqualTo(productPriceError)
-                .jsonPath("$baseJsonPath.name").exists()
-                .jsonPath("$baseJsonPath.name.name").isEqualTo(title)
-                .jsonPath("$baseJsonPath.name.error").doesNotExist()
+                .jsonPath(baseGetJsonPath).exists()
+                .jsonPath("$baseGetJsonPath.id").isEqualTo(id)
+                .jsonPath("$baseGetJsonPath.price").exists()
+                .jsonPath("$baseGetJsonPath.price.currentPrice").doesNotExist()
+                .jsonPath("$baseGetJsonPath.price.error").isEqualTo(productPriceError)
+                .jsonPath("$baseGetJsonPath.name").exists()
+                .jsonPath("$baseGetJsonPath.name.name").isEqualTo(title)
+                .jsonPath("$baseGetJsonPath.name.error").doesNotExist()
 
-        coVerify(exactly = 1) { priceRepository.findById(id) }
+        verify(exactly = 1) { priceRepository.findById(id) }
         coVerify(exactly = 1) { redSkyService.invokeRedSkyCall(id) }
     }
 
@@ -251,16 +250,16 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                 .exchange()
                 .expectStatus().isOk
                 .expectBody()
-                .jsonPath(baseJsonPath).exists()
-                .jsonPath("$baseJsonPath.id").isEqualTo(id)
-                .jsonPath("$baseJsonPath.price").exists()
-                .jsonPath("$baseJsonPath.price.currentPrice").doesNotExist()
-                .jsonPath("$baseJsonPath.price.error").isEqualTo(productPriceError)
-                .jsonPath("$baseJsonPath.name").exists()
-                .jsonPath("$baseJsonPath.name.name").doesNotExist()
-                .jsonPath("$baseJsonPath.name.error").isEqualTo(redSkyErrorMessage)
+                .jsonPath(baseGetJsonPath).exists()
+                .jsonPath("$baseGetJsonPath.id").isEqualTo(id)
+                .jsonPath("$baseGetJsonPath.price").exists()
+                .jsonPath("$baseGetJsonPath.price.currentPrice").doesNotExist()
+                .jsonPath("$baseGetJsonPath.price.error").isEqualTo(productPriceError)
+                .jsonPath("$baseGetJsonPath.name").exists()
+                .jsonPath("$baseGetJsonPath.name.name").doesNotExist()
+                .jsonPath("$baseGetJsonPath.name.error").isEqualTo(redSkyErrorMessage)
 
-        coVerify(exactly = 1) { priceRepository.findById(id) }
+        verify(exactly = 1) { priceRepository.findById(id) }
         coVerify(exactly = 4) { redSkyService.invokeRedSkyCall(id) }
     }
 
@@ -307,18 +306,18 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                 .expectBody()
                 .jsonPath("$").exists()
                 .jsonPath("$.data").exists()
-                .jsonPath(baseJsonPath).exists()
-                .jsonPath("$baseJsonPath.id").doesNotExist()
-                .jsonPath("$baseJsonPath.name").exists()
-                .jsonPath("$baseJsonPath.name.name").isEqualTo(title)
-                .jsonPath("$baseJsonPath.name.error").doesNotExist()
-                .jsonPath("$baseJsonPath.price").exists()
-                .jsonPath("$baseJsonPath.price.currentPrice").exists()
-                .jsonPath("$baseJsonPath.price.currentPrice.value").isEqualTo(value)
-                .jsonPath("$baseJsonPath.price.currentPrice.currencyCode").doesNotExist()
-                .jsonPath("$baseJsonPath.price.error").doesNotExist()
+                .jsonPath(baseGetJsonPath).exists()
+                .jsonPath("$baseGetJsonPath.id").doesNotExist()
+                .jsonPath("$baseGetJsonPath.name").exists()
+                .jsonPath("$baseGetJsonPath.name.name").isEqualTo(title)
+                .jsonPath("$baseGetJsonPath.name.error").doesNotExist()
+                .jsonPath("$baseGetJsonPath.price").exists()
+                .jsonPath("$baseGetJsonPath.price.currentPrice").exists()
+                .jsonPath("$baseGetJsonPath.price.currentPrice.value").isEqualTo(value)
+                .jsonPath("$baseGetJsonPath.price.currentPrice.currencyCode").doesNotExist()
+                .jsonPath("$baseGetJsonPath.price.error").doesNotExist()
 
-        coVerify(exactly = 1) { priceRepository.findById(id) }
+        verify(exactly = 1) { priceRepository.findById(id) }
         coVerify(exactly = 1) { redSkyService.invokeRedSkyCall(id) }
     }
 
@@ -362,13 +361,117 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                 .expectBody()
                 .jsonPath("$").exists()
                 .jsonPath("$.data").exists()
-                .jsonPath(baseJsonPath).exists()
-                .jsonPath("$baseJsonPath.name").doesNotExist()
-                .jsonPath("$baseJsonPath.price").exists()
-                .jsonPath("$baseJsonPath.price.currentPrice").exists()
-                .jsonPath("$baseJsonPath.price.currentPrice.value").isEqualTo(value)
+                .jsonPath(baseGetJsonPath).exists()
+                .jsonPath("$baseGetJsonPath.name").doesNotExist()
+                .jsonPath("$baseGetJsonPath.price").exists()
+                .jsonPath("$baseGetJsonPath.price.currentPrice").exists()
+                .jsonPath("$baseGetJsonPath.price.currentPrice.value").isEqualTo(value)
 
-        coVerify(exactly = 1) { priceRepository.findById(id) }
+        verify(exactly = 1) { priceRepository.findById(id) }
         coVerify { redSkyService.invokeRedSkyCall(id) wasNot called }
+    }
+
+    @Test
+    fun `update product response when data exists in data store`(): Unit = runBlocking {
+        val id = 8
+        val value = 15.3
+        val currencyCode = "EUR"
+
+        val newValue = 20.9
+        val newCurrencyCode = "USD"
+
+        val originalPriceDocument = PriceDocument(id, value, currencyCode)
+        val newPriceDocument = PriceDocument(id, newValue, newCurrencyCode)
+
+        every { priceRepository.findById(id) } returns Mono.just(originalPriceDocument)
+        every { priceRepository.save(newPriceDocument) } returns Mono.just(newPriceDocument)
+
+        /**
+         *
+         * {
+            "data": {
+                "updateProductInfo": {
+                    "price": {
+                        "currentPrice": {
+                            "value": 20.9,
+                            "currencyCode": "USD"
+                        },
+                        "error": null
+                    }
+                }
+            }
+        }
+         *
+         */
+
+        val request = GraphQLRequest(query = "mutation { updateProductInfo(id: $id, updateProductRequest: { newPrice: { value: $newValue, currencyCode: \"$newCurrencyCode\" }}) { price { currentPrice { value, currencyCode } error } } }")
+
+        client
+            .post()
+            .uri(graphQLEndpoint)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(request)
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$").exists()
+            .jsonPath("$.data").exists()
+            .jsonPath(baseUpdateJsonPath).exists()
+            .jsonPath("$baseUpdateJsonPath.price").exists()
+            .jsonPath("$baseUpdateJsonPath.price.currentPrice").exists()
+            .jsonPath("$baseUpdateJsonPath.price.currentPrice.value").isEqualTo(newValue)
+            .jsonPath("$baseUpdateJsonPath.price.currentPrice.currencyCode").isEqualTo(newCurrencyCode)
+            .jsonPath("$baseUpdateJsonPath.price.error").doesNotExist()
+
+        verify(exactly = 1) { priceRepository.findById(id) }
+        verify(exactly = 1) { priceRepository.save(newPriceDocument) }
+    }
+
+    @Test
+    fun `update product response when data does not exists in data store`(): Unit = runBlocking {
+        val id = 8
+
+        val newValue = 20.9
+        val newCurrencyCode = "USD"
+
+        val errorMessage = "price not found in data store"
+
+        every { priceRepository.findById(id) } returns Mono.empty()
+        every { priceRepository.save(any()) } returns Mono.empty()
+
+        /**
+         *
+         * {
+            "data": {
+                "updateProductInfo": {
+                    "price": {
+                        "currentPrice": null,
+                        "error": "price not found in data store"
+                    }
+                }
+            }
+        }
+         *
+         */
+
+        val request = GraphQLRequest(query = "mutation { updateProductInfo(id: $id, updateProductRequest: { newPrice: { value: $newValue, currencyCode: \"$newCurrencyCode\" }}) { price { currentPrice { value, currencyCode } error } } }")
+
+        client
+            .post()
+            .uri(graphQLEndpoint)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(request)
+            .exchange()
+            .expectStatus().isOk
+            .expectBody()
+            .jsonPath("$").exists()
+            .jsonPath("$.data").exists()
+            .jsonPath(baseUpdateJsonPath).exists()
+            .jsonPath("$baseUpdateJsonPath.price").exists()
+            .jsonPath("$baseUpdateJsonPath.price.currentPrice").doesNotExist()
+            .jsonPath("$baseUpdateJsonPath.price.error").isEqualTo(errorMessage)
+
+        verify(exactly = 1) { priceRepository.findById(id) }
+        verify { priceRepository.save(any()) wasNot called }
     }
 }

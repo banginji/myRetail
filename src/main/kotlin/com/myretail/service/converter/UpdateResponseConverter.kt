@@ -11,10 +11,7 @@ import org.springframework.stereotype.Component
 class UpdateResponseConverter: Converter<PriceResponse, UpdateProductResponse> {
     override fun convert(source: PriceResponse): UpdateProductResponse = UpdateProductResponse(
             price = ProductPrice(
-                    currentPrice = ProductCurrentPrice(
-                            value = source.price?.value,
-                            currencyCode = source.price?.currencyCode
-                    ),
+                    currentPrice = source.price?.let { ProductCurrentPrice(value = source.price.value, currencyCode = source.price.currencyCode) },
                     error = source.error?.error
             )
     )
