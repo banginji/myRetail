@@ -39,29 +39,9 @@ Two ways to run the service:
 - The project can also be run on docker containers (service and mongodb) locally using the command
 >./gradlew clean build && docker-compose up
 
-### Information about the graphql query models
-##### Query and mutation
+### Information about the graphql query models in the graphql playground
+Documentation for queries and mutations available for the user along with the model details
 ![Query and mutation](https://github.com/banginji/myRetail/blob/master/images/docs/docs1.png?raw=true)
-##### Get Product Info's ProductResponse model
-![Get Product Info's ProductResponse model](https://github.com/banginji/myRetail/blob/master/images/docs/docs2.png?raw=true)
-##### ProductResponse's ProductName model
-![ProductResponse's ProductName model](https://github.com/banginji/myRetail/blob/master/images/docs/docs3.png?raw=true)
-##### ProductResponse's ProductPrice model
-![ProductResponse's ProductPrice model](https://github.com/banginji/myRetail/blob/master/images/docs/docs4.png?raw=true)
-##### ProductPrice's ProductCurrentPrice model
-![ProductPrice's ProductCurrentPrice model](https://github.com/banginji/myRetail/blob/master/images/docs/docs5.png?raw=true)
-##### Update Product Info's UpdateProductResponse model
-![Update Product Info's UpdateProductResponse model](https://github.com/banginji/myRetail/blob/master/images/docs/docs6.png?raw=true)
-##### UpdateProductResponse's ProductPrice model
-![UpdateProductResponse's ProductPrice model](https://github.com/banginji/myRetail/blob/master/images/docs/docs7.png?raw=true)
-##### ProductPrice's ProductCurrentPrice model
-![ProductPrice's ProductCurrentPrice model](https://github.com/banginji/myRetail/blob/master/images/docs/docs8.png?raw=true)
-##### Update Product Info's updateProductRequest model
-![Update Product Info's updateProductRequest model](https://github.com/banginji/myRetail/blob/master/images/docs/docs9.png?raw=true)
-##### updateProductRequest's ProductNewPriceInput model
-![updateProductRequest's ProductNewPriceInput model](https://github.com/banginji/myRetail/blob/master/images/docs/docs10.png?raw=true)
-##### Raw schemas
-![Raw schemas](https://github.com/banginji/myRetail/blob/master/images/docs/docs11.png?raw=true)
 
 ### Example request / response for different cases
 The application allows users to look up information of items if they know the item `id`
