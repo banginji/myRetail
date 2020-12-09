@@ -4,7 +4,7 @@
 This application is a poc of a products API which aggregates data (price and title) from multiple sources and returns it to the invoker in JSON format
 
 ### Tech Stack
-- JDK v11
+- JDK v14
 - Kotlin
 - GraphQL
 - Spring Boot framework
@@ -29,7 +29,7 @@ Unit and integration tests have been written to make sure that the functionality
 
 ### Instructions for running the service
 Requirements to run the code
-- JDK v11 (not required locally if docker is used)
+- JDK v14 (not required locally if docker is used)
 - Docker
 
 Two ways to run the service:
