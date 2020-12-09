@@ -4,8 +4,9 @@
 This application is a poc of a products API which aggregates data (price and title) from multiple sources and returns it to the invoker in JSON format
 
 ### Tech Stack
-- JDK v13
+- JDK v11
 - Kotlin
+- GraphQL
 - Spring Boot framework
 - MongoDB
 
@@ -28,7 +29,7 @@ Unit and integration tests have been written to make sure that the functionality
 
 ### Instructions for running the service
 Requirements to run the code
-- JDK v13 (not required locally if docker is used)
+- JDK v11 (not required locally if docker is used)
 - Docker
 
 Two ways to run the service:
@@ -40,107 +41,148 @@ Two ways to run the service:
 
 ### Example request / response for different cases
 The application allows users to look up information of items if they know the item `id`
+The calls can be made to the service either using the graphql playground by navigating to `http://localhost:8080/playground` or by curl
+If the playground is used then it gives the documentation on the queries that are allowed with the types
 
-- If price is available in the data store and name is available in redsky then the response looks like this with a `200` response code
+Following are examples of different scenarios with their requests and responses
+
+###### If price is available in the data store and name is available in redsky
 ##### Request
 ```
-curl -v http://localhost:8080/product/13860428
+curl -v -XPOST http://localhost:8080/graphql -H 'Content-Type: application/json' -d '{"query":"query { getProductInfo(id: 13860428) { price { currentPrice { value } error } name { name error } id } }"}'
 ```
 ##### Response
 ```
 {
-  "id": 13860428,
-  "name": "The Big Lebowski (Blu-ray)",
-  "current_price": {
-    "value": 1193.33,
-    "currency_code": "USD"
-  },
-  "productErrors": []
+  "data": {
+    "getProductInfo": {
+      "price": {
+        "currentPrice": {
+          "value": 1193.33
+        },
+        "error": null
+      },
+      "name": {
+        "name": "The Big Lebowski (Blu-ray)",
+        "error": null
+      },
+      "id": 13860428
+    }
+  }
 }
 ``` 
 
-- If price is available in the data store but the name is not available in redsky then the response looks like this with a `200` response code
+###### If price is available in the data store, but the name is not available in redsky
 ##### Request
 ```
-curl -v http://localhost:8080/product/123
+curl -v -XPOST http://localhost:8080/graphql -H 'Content-Type: application/json' -d '{"query":"query { getProductInfo(id: 123) { price { currentPrice { value } error } name { name error } id } }"}'
 ```
 ##### Response
 ```
 {
-  "id": 123,
-  "current_price": {
-    "value": 14.23,
-    "currency_code": "USD"
-  },
-  "productErrors": [
-    {
-      "redSkyError": "could not retrieve title from redsky: (Retries exhausted: 3/3)"
+  "data": {
+    "getProductInfo": {
+      "price": {
+        "currentPrice": {
+          "value": 14.23
+        },
+        "error": null
+      },
+      "name": {
+        "name": null,
+        "error": "could not retrieve title from redsky"
+      },
+      "id": 123
     }
-  ]
-}
-```
-
-- If price is not available in the data store but the name is available in redsky then the response looks like this with a `200` response code
-##### Request
-```
-curl -v http://localhost:8080/product/13860427
-```
-##### Response
-```
-{
-  "id": 13860427,
-  "name": "Conan the Barbarian (dvd_video)",
-  "productErrors": [
-    {
-      "productPriceError": "price not found in data store"
-    }
-  ]
-}
-```
-
-- If the price is not available in data store and name is not available in redsky then response looks like this with a `404` response code
-##### Request
-```
-curl -v http://localhost:8080/product/1386
-```
-##### Response
-```
-{
-  "productErrors": [
-    {
-      "productPriceError": "price not found in data store"
-    },
-    {
-      "redSkyError": "could not retrieve title from redsky: (Retries exhausted: 3/3)"
-    }
-  ]
-}
-```
-
-- If something goes wrong with the request (like an exception was thrown or user request is badly formatted) then the response looks like this with a `400` response code
-##### Request
-```
-curl -v http://localhost:8080/product/9hg294g
-```
-##### Response
-```
-{
-    "error": "bad request"
-}
-```
-
-- If user needs to update the price information of a product then they can send in a payload with the `id` of the product in the url path
-##### Request
-```
-curl -v -XPUT http://localhost:8080/product/123 -H "Content-type: application/json" -d '{"current_price": {"currency_code": "USD"} }'
-```
-##### Request Payload format
-```
-{
-  "current_price": {
-    "value": 1.1,
-    "currency_code": "USD"
   }
 }
 ```
-A single field (either `value` or `currency_code`) can be updated
+
+###### If price is not available in the data store, but the name is available in redsky
+##### Request
+```
+curl -v -XPOST http://localhost:8080/graphql -H 'Content-Type: application/json' -d '{"query":"query { getProductInfo(id: 13860427) { price { currentPrice { value } error } name { name error } id } }"}'
+```
+##### Response
+```
+{
+  "data": {
+    "getProductInfo": {
+      "price": {
+        "currentPrice": null,
+        "error": "price not found in data store"
+      },
+      "name": {
+        "name": "Conan the Barbarian (DVD)",
+        "error": null
+      },
+      "id": 13860427
+    }
+  }
+}
+```
+
+###### If the price is not available in data store and name is not available in redsky
+##### Request
+```
+curl -v -XPOST http://localhost:8080/graphql -H 'Content-Type: application/json' -d '{"query":"query { getProductInfo(id: 789) { price { currentPrice { value } error } name { name error } id } }"}'
+```
+##### Response
+```
+{
+  "data": {
+    "getProductInfo": {
+      "price": {
+        "currentPrice": null,
+        "error": "price not found in data store"
+      },
+      "name": {
+        "name": null,
+        "error": "could not retrieve title from redsky"
+      },
+      "id": 789
+    }
+  }
+}
+```
+
+###### If user needs to update the price information of a product then they can send in a payload with the `id` of the product in the url path
+##### Request
+```
+curl 'http://localhost:8080/graphql' -H 'Content-Type: application/json' -d '{"query":"mutation { updateProductInfo(id: 234, updateProductRequest: { newPrice: { value: 129.99 }}) { price { currentPrice { value } error } } }"}'
+```
+##### Response
+```
+{
+  "data": {
+    "updateProductInfo": {
+      "price": {
+        "currentPrice": {
+          "value": 129.99
+        },
+        "error": null
+      }
+    }
+  }
+}
+```
+A single field (either `value` or `currencyCode`) can be updated
+
+###### If product is not found in data store then error message is displayed in the response
+##### Request
+```
+curl 'http://localhost:8080/graphql' -H 'Content-Type: application/json' -d '{"query":"mutation { updateProductInfo(id: 789, updateProductRequest: { newPrice: { value: 129.99 }}) { price { currentPrice { value } error } } }"}'
+```
+##### Response
+```
+{
+  "data": {
+    "updateProductInfo": {
+      "price": {
+        "currentPrice": null,
+        "error": "price not found in data store"
+      }
+    }
+  }
+}
+```
