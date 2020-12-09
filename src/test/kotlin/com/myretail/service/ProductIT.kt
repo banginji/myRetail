@@ -57,7 +57,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                     "price": {
                         "currentPrice": {
                             "value": 1193.33,
-                            "currency_code": "USD"
+                            "currencyCode": "USD"
                         },
                         "error": null
                     },
@@ -71,7 +71,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
          *
          */
 
-        val request = GraphQLRequest(query = "{ getProductInfo(id: 8) { price { currentPrice { value, currency_code } error } name { name error } id } }")
+        val request = GraphQLRequest(query = "{ getProductInfo(id: 8) { price { currentPrice { value, currencyCode } error } name { name error } id } }")
 
         client
                 .post()
@@ -91,7 +91,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                 .jsonPath("$baseJsonPath.price").exists()
                 .jsonPath("$baseJsonPath.price.currentPrice").exists()
                 .jsonPath("$baseJsonPath.price.currentPrice.value").isEqualTo(value)
-                .jsonPath("$baseJsonPath.price.currentPrice.currency_code").isEqualTo(currencyCode)
+                .jsonPath("$baseJsonPath.price.currentPrice.currencyCode").isEqualTo(currencyCode)
                 .jsonPath("$baseJsonPath.price.error").doesNotExist()
 
         coVerify(exactly = 1) { priceRepository.findById(id) }
@@ -119,7 +119,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                     "price": {
                         "currentPrice": {
                             "value": 1193.33,
-                            "currency_code": "USD"
+                            "currencyCode": "USD"
                         },
                         "error": null
                     },
@@ -133,7 +133,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
          *
          */
 
-        val request = GraphQLRequest(query = "{ getProductInfo(id: 8) { price { currentPrice { value, currency_code } error } name { name error } id } }")
+        val request = GraphQLRequest(query = "{ getProductInfo(id: 8) { price { currentPrice { value, currencyCode } error } name { name error } id } }")
 
         client
                 .post()
@@ -148,7 +148,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                 .jsonPath("$baseJsonPath.price").exists()
                 .jsonPath("$baseJsonPath.price.currentPrice").exists()
                 .jsonPath("$baseJsonPath.price.currentPrice.value").isEqualTo(value)
-                .jsonPath("$baseJsonPath.price.currentPrice.currency_code").isEqualTo(currencyCode)
+                .jsonPath("$baseJsonPath.price.currentPrice.currencyCode").isEqualTo(currencyCode)
                 .jsonPath("$baseJsonPath.name").exists()
                 .jsonPath("$baseJsonPath.name.name").doesNotExist()
                 .jsonPath("$baseJsonPath.name.error").isEqualTo(redSkyErrorMessage)
@@ -187,7 +187,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
          *
          */
 
-        val request = GraphQLRequest(query = "{ getProductInfo(id: 8) { price { currentPrice { value, currency_code } error } name { name error } id } }")
+        val request = GraphQLRequest(query = "{ getProductInfo(id: 8) { price { currentPrice { value, currencyCode } error } name { name error } id } }")
 
         client
                 .post()
@@ -241,7 +241,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
          *
          */
 
-        val request = GraphQLRequest(query = "{ getProductInfo(id: 8) { price { currentPrice { value, currency_code } error } name { name error } id } }")
+        val request = GraphQLRequest(query = "{ getProductInfo(id: 8) { price { currentPrice { value, currencyCode } error } name { name error } id } }")
 
         client
                 .post()
@@ -315,7 +315,7 @@ class ProductIT(@Autowired private val client : WebTestClient) {
                 .jsonPath("$baseJsonPath.price").exists()
                 .jsonPath("$baseJsonPath.price.currentPrice").exists()
                 .jsonPath("$baseJsonPath.price.currentPrice.value").isEqualTo(value)
-                .jsonPath("$baseJsonPath.price.currentPrice.currency_code").doesNotExist()
+                .jsonPath("$baseJsonPath.price.currentPrice.currencyCode").doesNotExist()
                 .jsonPath("$baseJsonPath.price.error").doesNotExist()
 
         coVerify(exactly = 1) { priceRepository.findById(id) }

@@ -49,7 +49,7 @@ class ProductServiceTest {
         val newCurrencyCode = "EUR"
         val updateProductRequest = UpdateProductRequest(ProductCurrentPrice(newValue, newCurrencyCode))
         val updatePriceRequest = UpdatePriceRequest(CurrentPrice(newValue, newCurrencyCode))
-        val updateProductResponse = UpdateProductResponse(price = ProductPrice(currentPrice = ProductCurrentPrice(value = newValue, currency_code = newCurrencyCode), error = null))
+        val updateProductResponse = UpdateProductResponse(price = ProductPrice(currentPrice = ProductCurrentPrice(value = newValue, currencyCode = newCurrencyCode), error = null))
 
         val priceResponse = PriceResponse(price = null, error = null)
         coEvery { priceService.updateProductPrice(id, updatePriceRequest) } returns priceResponse

@@ -25,7 +25,7 @@ class UpdatePriceDocumentConverterTest {
         val newCurrencyCode = "USD"
 
         val inPriceDocument = PriceDocument(id = id, value = value, currency_code = currencyCode)
-        val currentPrice = CurrentPrice(value = newValue, currency_code = newCurrencyCode)
+        val currentPrice = CurrentPrice(value = newValue, currencyCode = newCurrencyCode)
 
         val expectedResponse = PriceDocument(id = id, value = newValue, currency_code = newCurrencyCode)
 
@@ -43,7 +43,7 @@ class UpdatePriceDocumentConverterTest {
         val newValue = 20.9
 
         val inPriceDocument = PriceDocument(id = id, value = value, currency_code = currencyCode)
-        val currentPrice = CurrentPrice(value = newValue, currency_code = null)
+        val currentPrice = CurrentPrice(value = newValue, currencyCode = null)
 
         val expectedResponse = PriceDocument(id = id, value = newValue, currency_code = currencyCode)
 

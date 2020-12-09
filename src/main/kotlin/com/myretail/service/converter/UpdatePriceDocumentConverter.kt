@@ -12,6 +12,6 @@ class UpdatePriceDocumentConverter: Converter<Pair<PriceDocument, CurrentPrice>,
     ): PriceDocument = PriceDocument(
         source.first.id,
         source.second.value ?: source.first.value,
-        source.second.currency_code ?: source.first.currency_code
+        source.second.currencyCode ?: source.first.currency_code
     )
 }

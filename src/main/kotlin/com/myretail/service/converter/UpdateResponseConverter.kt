@@ -13,7 +13,7 @@ class UpdateResponseConverter: Converter<PriceResponse, UpdateProductResponse> {
             price = ProductPrice(
                     currentPrice = ProductCurrentPrice(
                             value = source.price?.value,
-                            currency_code = source.price?.currency_code
+                            currencyCode = source.price?.currencyCode
                     ),
                     error = source.error?.error
             )

@@ -24,7 +24,7 @@ class PriceDocumentResponseConverterTest {
 
         val priceDocument = PriceDocument(id = id, value = value, currency_code = currencyCode)
 
-        val expectedResponse = PriceResponse(price = Price(id = id, value = value, currency_code = currencyCode))
+        val expectedResponse = PriceResponse(price = Price(id = id, value = value, currencyCode = currencyCode))
 
         val actualResponse = priceDocumentResponseConverter.convert(priceDocument)
 

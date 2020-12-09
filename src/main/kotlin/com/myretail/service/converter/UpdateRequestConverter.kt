@@ -9,6 +9,6 @@ import org.springframework.stereotype.Component
 @Component
 class UpdateRequestConverter : Converter<UpdateProductRequest, UpdatePriceRequest> {
     override fun convert(source: UpdateProductRequest): UpdatePriceRequest = UpdatePriceRequest(
-            currentPrice = CurrentPrice(value = source.currentPrice.value, currency_code = source.currentPrice.currency_code)
+            currentPrice = CurrentPrice(value = source.currentPrice.value, currencyCode = source.currentPrice.currencyCode)
     )
 }
