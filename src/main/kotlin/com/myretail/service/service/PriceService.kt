@@ -3,7 +3,7 @@ package com.myretail.service.service
 import com.myretail.service.converter.PriceDocumentResponseConverter
 import com.myretail.service.converter.UpdatePriceDocumentConverter
 import com.myretail.service.domain.product.ProductError
-import com.myretail.service.domain.price.CurrentPrice
+import com.myretail.service.domain.price.NewPrice
 import com.myretail.service.domain.price.PriceResponse
 import com.myretail.service.domain.price.UpdatePriceRequest
 import com.myretail.service.persistence.PriceDocument
@@ -21,19 +21,19 @@ class PriceService(
 
     suspend fun updateProductPrice(
             id: Int, updatePriceRequest: UpdatePriceRequest
-    ) : PriceResponse = findProductPriceById(id).flatMap { updateExistingProductPrice(it, updatePriceRequest.currentPrice) }.awaitFirstOrElse { priceNotFound() }
+    ) : PriceResponse = findProductPriceById(id).flatMap { updateExistingProductPrice(it, updatePriceRequest.newPrice) }.awaitFirstOrElse { priceNotFound() }
 
     fun findProductPriceById(id: Int) = priceRepository.findById(id)
 
     private fun updateExistingProductPrice(
-            price: PriceDocument,
-            currentPrice: CurrentPrice
-    ) = saveProductPrice(price, currentPrice).map { priceDocumentResponseConverter.convert(it) }
+        price: PriceDocument,
+        newPrice: NewPrice
+    ) = saveProductPrice(price, newPrice).map { priceDocumentResponseConverter.convert(it) }
 
     private fun saveProductPrice(
-            price: PriceDocument,
-            currentPrice: CurrentPrice
-    ) = priceRepository.save(updatePriceDocumentConverter.convert(price to currentPrice))
+        price: PriceDocument,
+        newPrice: NewPrice
+    ) = priceRepository.save(updatePriceDocumentConverter.convert(price to newPrice))
 
     private fun priceNotFound() = PriceResponse(null, ProductError("price not found in data store"))
 }

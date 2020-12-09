@@ -3,7 +3,7 @@ package com.myretail.service.service
 import com.myretail.service.converter.PriceDocumentResponseConverter
 import com.myretail.service.converter.UpdatePriceDocumentConverter
 import com.myretail.service.domain.product.ProductError
-import com.myretail.service.domain.price.CurrentPrice
+import com.myretail.service.domain.price.NewPrice
 import com.myretail.service.domain.price.Price
 import com.myretail.service.domain.price.PriceResponse
 import com.myretail.service.domain.price.UpdatePriceRequest
@@ -83,12 +83,12 @@ class PriceServiceTest {
 
         val newValue = 2.2
         val newCurrencyCode = "EUR"
-        val updateProductPriceRequest = UpdatePriceRequest(CurrentPrice(newValue, newCurrencyCode))
+        val updateProductPriceRequest = UpdatePriceRequest(NewPrice(newValue, newCurrencyCode))
 
         val updatedProductPrice = PriceDocument(id, newValue, newCurrencyCode)
         val updatedProductProductResponse = PriceResponse(Price(id, newValue, newCurrencyCode))
 
-        every { updatePriceDocumentConverter.convert(productPrice to updateProductPriceRequest.currentPrice) } returns updatedProductPrice
+        every { updatePriceDocumentConverter.convert(productPrice to updateProductPriceRequest.newPrice) } returns updatedProductPrice
         every { priceRepository.save(updatedProductPrice) } returns Mono.just(updatedProductPrice)
         every { priceDocumentResponseConverter.convert(updatedProductPrice) } returns updatedProductProductResponse
 
@@ -96,7 +96,7 @@ class PriceServiceTest {
 
         verify(exactly = 1) { priceRepository.findById(id) }
         verify(exactly = 1) { priceRepository.save(updatedProductPrice) }
-        verify(exactly = 1) { updatePriceDocumentConverter.convert(productPrice to updateProductPriceRequest.currentPrice) }
+        verify(exactly = 1) { updatePriceDocumentConverter.convert(productPrice to updateProductPriceRequest.newPrice) }
         verify(exactly = 1) { priceDocumentResponseConverter.convert(updatedProductPrice) }
 
         assertEquals(updatedProductProductResponse, actualResponse)
@@ -112,7 +112,7 @@ class PriceServiceTest {
 
         val newValue = 2.2
         val newCurrencyCode = "EUR"
-        val updateProductPriceRequest = UpdatePriceRequest(CurrentPrice(newValue, newCurrencyCode))
+        val updateProductPriceRequest = UpdatePriceRequest(NewPrice(newValue, newCurrencyCode))
 
         val actualResponse = priceService.updateProductPrice(id, updateProductPriceRequest)
 

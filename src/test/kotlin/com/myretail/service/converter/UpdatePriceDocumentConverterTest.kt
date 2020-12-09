@@ -1,6 +1,6 @@
 package com.myretail.service.converter
 
-import com.myretail.service.domain.price.CurrentPrice
+import com.myretail.service.domain.price.NewPrice
 import com.myretail.service.persistence.PriceDocument
 import io.mockk.spyk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -25,7 +25,7 @@ class UpdatePriceDocumentConverterTest {
         val newCurrencyCode = "USD"
 
         val inPriceDocument = PriceDocument(id = id, value = value, currency_code = currencyCode)
-        val currentPrice = CurrentPrice(value = newValue, currencyCode = newCurrencyCode)
+        val currentPrice = NewPrice(value = newValue, currencyCode = newCurrencyCode)
 
         val expectedResponse = PriceDocument(id = id, value = newValue, currency_code = newCurrencyCode)
 
@@ -43,7 +43,7 @@ class UpdatePriceDocumentConverterTest {
         val newValue = 20.9
 
         val inPriceDocument = PriceDocument(id = id, value = value, currency_code = currencyCode)
-        val currentPrice = CurrentPrice(value = newValue, currencyCode = null)
+        val currentPrice = NewPrice(value = newValue, currencyCode = null)
 
         val expectedResponse = PriceDocument(id = id, value = newValue, currency_code = currencyCode)
 

@@ -4,13 +4,10 @@ import com.myretail.service.converter.PriceResponseConverter
 import com.myretail.service.converter.RedSkyResponseConverter
 import com.myretail.service.converter.UpdateRequestConverter
 import com.myretail.service.converter.UpdateResponseConverter
-import com.myretail.service.domain.price.CurrentPrice
+import com.myretail.service.domain.price.NewPrice
 import com.myretail.service.domain.price.PriceResponse
 import com.myretail.service.domain.price.UpdatePriceRequest
-import com.myretail.service.domain.product.ProductCurrentPrice
-import com.myretail.service.domain.product.ProductPrice
-import com.myretail.service.domain.product.UpdateProductRequest
-import com.myretail.service.domain.product.UpdateProductResponse
+import com.myretail.service.domain.product.*
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.every
@@ -47,8 +44,8 @@ class ProductServiceTest {
 
         val newValue = 2.2
         val newCurrencyCode = "EUR"
-        val updateProductRequest = UpdateProductRequest(ProductCurrentPrice(newValue, newCurrencyCode))
-        val updatePriceRequest = UpdatePriceRequest(CurrentPrice(newValue, newCurrencyCode))
+        val updateProductRequest = UpdateProductRequest(ProductNewPrice(newValue, newCurrencyCode))
+        val updatePriceRequest = UpdatePriceRequest(NewPrice(newValue, newCurrencyCode))
         val updateProductResponse = UpdateProductResponse(price = ProductPrice(currentPrice = ProductCurrentPrice(value = newValue, currencyCode = newCurrencyCode), error = null))
 
         val priceResponse = PriceResponse(price = null, error = null)
