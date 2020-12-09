@@ -51,7 +51,7 @@ class ProductServiceTest {
         val updatePriceRequest = UpdatePriceRequest(CurrentPrice(newValue, newCurrencyCode))
         val updateProductResponse = UpdateProductResponse(price = ProductPrice(currentPrice = ProductCurrentPrice(value = newValue, currency_code = newCurrencyCode), error = null))
 
-        val priceResponse = PriceResponse(price = null, productPriceError = null)
+        val priceResponse = PriceResponse(price = null, error = null)
         coEvery { priceService.updateProductPrice(id, updatePriceRequest) } returns priceResponse
 
         every { updateRequestConverter.convert(updateProductRequest) } returns updatePriceRequest

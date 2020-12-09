@@ -1,6 +1,7 @@
 package com.myretail.service.service
 
 import com.myretail.service.converter.PriceDocumentResponseConverter
+import com.myretail.service.converter.UpdatePriceDocumentConverter
 import com.myretail.service.domain.product.ProductError
 import com.myretail.service.domain.price.CurrentPrice
 import com.myretail.service.domain.price.Price
@@ -25,6 +26,8 @@ class PriceServiceTest {
     private lateinit var priceRepository: PriceRepository
     @MockK
     private lateinit var priceDocumentResponseConverter: PriceDocumentResponseConverter
+    @MockK
+    private lateinit var updatePriceDocumentConverter: UpdatePriceDocumentConverter
 
     @InjectMockKs
     private lateinit var priceService: PriceService
@@ -85,6 +88,7 @@ class PriceServiceTest {
         val updatedProductPrice = PriceDocument(id, newValue, newCurrencyCode)
         val updatedProductProductResponse = PriceResponse(Price(id, newValue, newCurrencyCode))
 
+        every { updatePriceDocumentConverter.convert(productPrice to updateProductPriceRequest.currentPrice) } returns updatedProductPrice
         every { priceRepository.save(updatedProductPrice) } returns Mono.just(updatedProductPrice)
         every { priceDocumentResponseConverter.convert(updatedProductPrice) } returns updatedProductProductResponse
 
@@ -92,6 +96,7 @@ class PriceServiceTest {
 
         verify(exactly = 1) { priceRepository.findById(id) }
         verify(exactly = 1) { priceRepository.save(updatedProductPrice) }
+        verify(exactly = 1) { updatePriceDocumentConverter.convert(productPrice to updateProductPriceRequest.currentPrice) }
         verify(exactly = 1) { priceDocumentResponseConverter.convert(updatedProductPrice) }
 
         assertEquals(updatedProductProductResponse, actualResponse)
@@ -113,6 +118,7 @@ class PriceServiceTest {
 
         verify(exactly = 1) { priceRepository.findById(id) }
         verify { priceRepository.save(any()) wasNot called }
+        verify { updatePriceDocumentConverter.convert(any()) wasNot called }
         verify { priceDocumentResponseConverter.convert(any()) wasNot called }
 
         assertEquals(priceErrorResponse, actualResponse)

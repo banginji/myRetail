@@ -10,6 +10,6 @@ import org.springframework.stereotype.Component
 class PriceResponseConverter: Converter<PriceResponse, ProductPrice> {
     override fun convert(source: PriceResponse): ProductPrice = ProductPrice(
             currentPrice = source.price?.let { ProductCurrentPrice(source.price.value, source.price.currency_code) },
-            error = source.productPriceError?.error
+            error = source.error?.error
     )
 }

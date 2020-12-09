@@ -15,7 +15,7 @@ class UpdateResponseConverter: Converter<PriceResponse, UpdateProductResponse> {
                             value = source.price?.value,
                             currency_code = source.price?.currency_code
                     ),
-                    error = source.productPriceError?.error
+                    error = source.error?.error
             )
     )
 }

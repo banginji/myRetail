@@ -26,7 +26,7 @@ class UpdateResponseConverterTest {
         val currencyCode = "USD"
         val errorMessage = "error message"
 
-        val priceResponse = PriceResponse(price = Price(id = id, value = value, currency_code = currencyCode), productPriceError = ProductError(errorMessage))
+        val priceResponse = PriceResponse(price = Price(id = id, value = value, currency_code = currencyCode), error = ProductError(errorMessage))
 
         val expectedResponse = UpdateProductResponse(price = ProductPrice(currentPrice = ProductCurrentPrice(value = value, currency_code = currencyCode), error = errorMessage))
 
