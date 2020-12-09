@@ -39,6 +39,30 @@ Two ways to run the service:
 - The project can also be run on docker containers (service and mongodb) locally using the command
 >./gradlew clean build && docker-compose up
 
+### Information about the graphql query models
+##### Query and mutation
+![Query and mutation](https://github.com/banginji/myRetail/blob/master/images/docs/docs1.png?raw=true)
+##### Get Product Info's ProductResponse model
+![Get Product Info's ProductResponse model](https://github.com/banginji/myRetail/blob/master/images/docs/docs2.png?raw=true)
+##### ProductResponse's ProductName model
+![ProductResponse's ProductName model](https://github.com/banginji/myRetail/blob/master/images/docs/docs3.png?raw=true)
+##### ProductResponse's ProductPrice model
+![ProductResponse's ProductPrice model](https://github.com/banginji/myRetail/blob/master/images/docs/docs4.png?raw=true)
+##### ProductPrice's ProductCurrentPrice model
+![ProductPrice's ProductCurrentPrice model](https://github.com/banginji/myRetail/blob/master/images/docs/docs5.png?raw=true)
+##### Update Product Info's UpdateProductResponse model
+![Update Product Info's UpdateProductResponse model](https://github.com/banginji/myRetail/blob/master/images/docs/docs6.png?raw=true)
+##### UpdateProductResponse's ProductPrice model
+![UpdateProductResponse's ProductPrice model](https://github.com/banginji/myRetail/blob/master/images/docs/docs7.png?raw=true)
+##### ProductPrice's ProductCurrentPrice model
+![ProductPrice's ProductCurrentPrice model](https://github.com/banginji/myRetail/blob/master/images/docs/docs8.png?raw=true)
+##### Update Product Info's updateProductRequest model
+![Update Product Info's updateProductRequest model](https://github.com/banginji/myRetail/blob/master/images/docs/docs9.png?raw=true)
+##### updateProductRequest's ProductNewPriceInput model
+![updateProductRequest's ProductNewPriceInput model](https://github.com/banginji/myRetail/blob/master/images/docs/docs10.png?raw=true)
+##### Raw schemas
+![Raw schemas](https://github.com/banginji/myRetail/blob/master/images/docs/docs11.png?raw=true)
+
 ### Example request / response for different cases
 The application allows users to look up information of items if they know the item `id`
 The calls can be made to the service either using the graphql playground by navigating to `http://localhost:8080/playground` or by curl
@@ -71,6 +95,8 @@ curl -v -XPOST http://localhost:8080/graphql -H 'Content-Type: application/json'
   }
 }
 ``` 
+##### GraphQL
+![Request1](https://github.com/banginji/myRetail/blob/master/images/requests/1-get%20when%20both%20exist.png?raw=true)
 
 ###### If price is available in the data store, but the name is not available in redsky
 ##### Request
@@ -97,6 +123,8 @@ curl -v -XPOST http://localhost:8080/graphql -H 'Content-Type: application/json'
   }
 }
 ```
+##### GraphQL
+![Request2](https://github.com/banginji/myRetail/blob/master/images/requests/2-get%20when%20red%20sky%20does%20not%20exist.png?raw=true)
 
 ###### If price is not available in the data store, but the name is available in redsky
 ##### Request
@@ -121,6 +149,8 @@ curl -v -XPOST http://localhost:8080/graphql -H 'Content-Type: application/json'
   }
 }
 ```
+##### GraphQL
+![Request3](https://github.com/banginji/myRetail/blob/master/images/requests/3-get%20when%20no%20data%20in%20data%20store.png?raw=true)
 
 ###### If the price is not available in data store and name is not available in redsky
 ##### Request
@@ -145,6 +175,30 @@ curl -v -XPOST http://localhost:8080/graphql -H 'Content-Type: application/json'
   }
 }
 ```
+##### GraphQL
+![Request4](https://github.com/banginji/myRetail/blob/master/images/requests/4-get%20when%20both%20dont%20exist.png?raw=true)
+
+###### The client requests a subset of fields
+##### Request
+```
+curl -v -XPOST http://localhost:8080/graphql -H 'Content-Type: application/json' -d '{"query":"query { getProductInfo(id: 13860427) { price { currentPrice { value } } } }"}'
+```
+##### Response
+```
+{
+  "data": {
+    "getProductInfo": {
+      "price": {
+        "currentPrice": {
+            "value": 1193.33
+        }
+      }
+    }
+  }
+}
+```
+##### GraphQL
+![Request7](https://github.com/banginji/myRetail/blob/master/images/requests/7-get%20only%20specific%20fields.png?raw=true)
 
 ###### If user needs to update the price information of a product then they can send in a payload with the `id` of the product in the url path
 ##### Request
@@ -166,6 +220,9 @@ curl 'http://localhost:8080/graphql' -H 'Content-Type: application/json' -d '{"q
   }
 }
 ```
+##### GraphQL
+![Request5](https://github.com/banginji/myRetail/blob/master/images/requests/5-update%20existing.png?raw=true)
+
 A single field (either `value` or `currencyCode`) can be updated
 
 ###### If product is not found in data store then error message is displayed in the response
@@ -186,3 +243,5 @@ curl 'http://localhost:8080/graphql' -H 'Content-Type: application/json' -d '{"q
   }
 }
 ```
+##### GraphQL
+![Request6](https://github.com/banginji/myRetail/blob/master/images/requests/6-update%20for%20non%20existing.png?raw=true)
