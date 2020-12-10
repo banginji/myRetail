@@ -5,7 +5,6 @@ import com.myretail.service.domain.price.PriceResponse
 import com.myretail.service.domain.product.ProductCurrentPrice
 import com.myretail.service.domain.product.ProductError
 import com.myretail.service.domain.product.ProductPrice
-import com.myretail.service.domain.product.UpdateProductResponse
 import io.mockk.spyk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -28,7 +27,7 @@ class UpdateResponseConverterTest {
 
         val priceResponse = PriceResponse(price = Price(id = id, value = value, currencyCode = currencyCode), error = ProductError(errorMessage))
 
-        val expectedResponse = UpdateProductResponse(price = ProductPrice(currentPrice = ProductCurrentPrice(value = value, currencyCode = currencyCode), error = errorMessage))
+        val expectedResponse = ProductPrice(currentPrice = ProductCurrentPrice(value = value, currencyCode = currencyCode), error = errorMessage)
 
         val actualResponse = updateResponseConverter.convert(priceResponse)
 

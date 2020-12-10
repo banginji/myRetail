@@ -8,11 +8,14 @@ import org.springframework.core.convert.converter.Converter
 import org.springframework.stereotype.Component
 
 @Component
-class UpdateResponseConverter: Converter<PriceResponse, UpdateProductResponse> {
-    override fun convert(source: PriceResponse): UpdateProductResponse = UpdateProductResponse(
-            price = ProductPrice(
-                    currentPrice = source.price?.let { ProductCurrentPrice(value = source.price.value, currencyCode = source.price.currencyCode) },
-                    error = source.error?.error
+class UpdateResponseConverter : Converter<PriceResponse, ProductPrice> {
+    override fun convert(source: PriceResponse): ProductPrice = ProductPrice(
+        currentPrice = source.price?.let {
+            ProductCurrentPrice(
+                value = source.price.value,
+                currencyCode = source.price.currencyCode
             )
+        },
+        error = source.error?.error
     )
 }

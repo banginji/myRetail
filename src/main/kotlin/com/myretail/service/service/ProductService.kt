@@ -6,6 +6,7 @@ import com.myretail.service.converter.UpdateRequestConverter
 import com.myretail.service.converter.UpdateResponseConverter
 import com.myretail.service.domain.product.ProductResponse
 import com.myretail.service.domain.product.UpdateProductRequest
+import com.myretail.service.domain.product.UpdateProductResponse
 import org.springframework.stereotype.Service
 
 @Service
@@ -19,5 +20,5 @@ class ProductService(
 ) {
     fun getProductInfo(id: Int): ProductResponse = ProductResponse(id, priceService, redSkyService, redSkyResponseConverter, priceResponseConverter)
 
-    suspend fun updateProductPrice(id: Int, updateProductRequest: UpdateProductRequest) = updateResponseConverter.convert(priceService.updateProductPrice(id, updateRequestConverter.convert(updateProductRequest)))
+    fun updateProductPrice(id: Int, updateProductRequest: UpdateProductRequest) = UpdateProductResponse(id, updateProductRequest, priceService, updateRequestConverter, updateResponseConverter)
 }
